@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Neg, Sub};
 
 pub type Color = Vec3;
 pub type Point = Vec3;
@@ -24,32 +24,16 @@ impl Vec3 {
         self.z
     }
 
-    pub fn u8x(&self) -> u8 {
-        self.x as u8
-    }
-
-    pub fn u8y(&self) -> u8 {
-        self.y as u8
-    }
-
-    pub fn u8z(&self) -> u8 {
-        self.z as u8
-    }
-
-    pub fn ADD(ls: &Self, rs: &Self) -> Self {
-        Self {
-            x: (ls.x + rs.x),
-            y: (ls.y + rs.y),
-            z: (ls.z + rs.z),
-        }
-    }
-
     pub fn length(&self) -> f64 {
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
     pub fn unit_vector(v: Vec3) -> Self {
         v / v.length()
+    }
+
+    pub fn dot(ls: &Self, rs: &Self) -> f64 {
+        ls.x * rs.x + ls.y * rs.y + ls.z * rs.z
     }
 }
 

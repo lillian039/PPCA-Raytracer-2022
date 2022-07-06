@@ -1,11 +1,6 @@
-use super::ray::Ray;
 use super::vec3::Vec3;
 
 pub struct Camera {
-    viewport_hight: f64,
-    viewport_width: f64,
-    focal_length: f64,
-
     pub origin: Vec3,
     pub horizontal: Vec3,
     pub vertical: Vec3,
@@ -30,9 +25,6 @@ impl Camera {
             z: 0.0,
         };
         Camera {
-            viewport_hight: h,
-            viewport_width: w,
-            focal_length: f,
             origin: ori,
             horizontal: hori,
             vertical: vert,

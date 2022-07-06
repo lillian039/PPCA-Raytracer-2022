@@ -1,16 +1,40 @@
-use std::{fs::File, process::exit, vec};
+use std::{fs::File, process::exit};
 
 use image::{ImageBuffer, RgbImage};
 
 use console::style;
 use indicatif::{ProgressBar, ProgressStyle};
-pub mod basicTool;
-use basicTool::{camera::Camera, ray::Ray, vec3::Color, vec3::Point, vec3::Vec3};
+pub mod basic_tools;
+use basic_tools::{camera::Camera, ray::Ray, vec3::Color, vec3::Point, vec3::Vec3};
 
-fn ray_color(r: Ray) -> Color {
+fn hit_sphere(center: Point, radius: f64, r: &Ray) -> bool {
+    let oc: Vec3 = r.point - center;
+    let a = Vec3::dot(&r.direct, &r.direct);
+    let b = 2.0 * Vec3::dot(&oc, &r.direct);
+    let c = Vec3::dot(&oc, &oc) - radius * radius;
+    let discriminant = b * b - 4.0 * a * c;
+    discriminant > 0.0
+}
+
+fn ray_color(r: &Ray) -> Color {
+    if hit_sphere(
+        Point {
+            x: 0.0,
+            y: 0.0,
+            z: -1.0,
+        },
+        0.5,
+        r,
+    ) {
+        return Color {
+            x: 1.0,
+            y: 0.0,
+            z: 0.0,
+        };
+    }
     let unit_direction = Vec3::unit_vector(r.direct);
     let t = 0.5 * (unit_direction.y + 1.0);
-    return Color {
+    Color {
         x: 1.0,
         y: 1.0,
         z: 1.0,
@@ -19,22 +43,22 @@ fn ray_color(r: Ray) -> Color {
             x: 0.5,
             y: 0.7,
             z: 1.0,
-        } * t;
+        } * t
 }
 fn main() {
     print!("{}[2J", 27 as char); // Clear screen 27 as char --> esc
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char); // Set cursor position as 1,1
 
-    let height = 225;
-    let width = 400;
+    let height = 900;
+    let width = 1600;
     let quality = 100; // From 0 to 100
-    let path = "output/bluebackground.jpg";
+    let path = "output/image3.jpg";
 
     let camera = Camera::new(2.25, 4.0, 1.0);
 
     println!(
         "Image size: {}\nJPEG quality: {}",
-        style(width.to_string() + &"x".to_string() + &height.to_string()).yellow(),
+        style(width.to_string() + "x" + &height.to_string()).yellow(),
         style(quality.to_string()).yellow(),
     );
 
@@ -60,7 +84,7 @@ fn main() {
                 direct: camera.lower_left_corner + camera.horizontal * u + camera.vertical * v
                     - camera.origin,
             };
-            let col = ray_color(r);
+            let col = ray_color(&r);
             let pixel_color = [
                 (col.x * 255.999) as u8,
                 (col.y * 255.999) as u8,
