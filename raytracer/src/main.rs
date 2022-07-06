@@ -7,17 +7,20 @@ use indicatif::{ProgressBar, ProgressStyle};
 pub mod basic_tools;
 use basic_tools::{camera::Camera, ray::Ray, vec3::Color, vec3::Point, vec3::Vec3};
 
-fn hit_sphere(center: Point, radius: f64, r: &Ray) -> bool {
+fn hit_sphere(center: Point, radius: f64, r: &Ray) -> f64 {
     let oc: Vec3 = r.point - center;
     let a = Vec3::dot(&r.direct, &r.direct);
     let b = 2.0 * Vec3::dot(&oc, &r.direct);
     let c = Vec3::dot(&oc, &oc) - radius * radius;
     let discriminant = b * b - 4.0 * a * c;
-    discriminant > 0.0
+    if discriminant < 0.0 {
+        return -1.0;
+    }
+    (-b - discriminant.sqrt()) / (2.0 * a)
 }
 
 fn ray_color(r: &Ray) -> Color {
-    if hit_sphere(
+    let t = hit_sphere(
         Point {
             x: 0.0,
             y: 0.0,
@@ -25,12 +28,21 @@ fn ray_color(r: &Ray) -> Color {
         },
         0.5,
         r,
-    ) {
+    );
+    if t > 0.0 {
+        let n = Vec3::unit_vector(
+            r.at(t)
+                - Vec3 {
+                    x: (0.0),
+                    y: (0.0),
+                    z: (-1.0),
+                },
+        );
         return Color {
-            x: 1.0,
-            y: 0.0,
-            z: 0.0,
-        };
+            x: n.x + 1.0,
+            y: n.y + 1.0,
+            z: n.z + 1.0,
+        } * 0.5;
     }
     let unit_direction = Vec3::unit_vector(r.direct);
     let t = 0.5 * (unit_direction.y + 1.0);
@@ -52,7 +64,7 @@ fn main() {
     let height = 900;
     let width = 1600;
     let quality = 100; // From 0 to 100
-    let path = "output/image3.jpg";
+    let path = "output/image4.jpg";
 
     let camera = Camera::new(2.25, 4.0, 1.0);
 
