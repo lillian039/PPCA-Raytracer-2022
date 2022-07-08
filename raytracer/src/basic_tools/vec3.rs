@@ -1,3 +1,4 @@
+use super::super::hittable::hittable_origin::{random_double, random_t};
 use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Neg, Sub};
 
 pub type Color = Vec3;
@@ -14,14 +15,29 @@ impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Vec3 {
         Vec3 { x, y, z }
     }
-    pub fn x(&self) -> f64 {
-        self.x
+
+    pub fn random() -> Self {
+        Self {
+            x: (random_double()),
+            y: (random_double()),
+            z: (random_double()),
+        }
     }
-    pub fn y(&self) -> f64 {
-        self.y
+
+    pub fn random_range(min: f64, max: f64) -> Self {
+        Self {
+            x: (random_t(min, max)),
+            y: (random_t(min, max)),
+            z: (random_t(min, max)),
+        }
     }
-    pub fn z(&self) -> f64 {
-        self.z
+
+    pub fn random_in_unit_sphere() -> Self {
+        let mut p = Vec3::random_range(-1.0, 1.0);
+        while p.length_squared() >= 1.0 {
+            p = Vec3::random_range(-1.0, 1.0);
+        }
+        p
     }
 
     pub fn length(&self) -> f64 {
