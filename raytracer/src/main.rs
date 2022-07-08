@@ -33,7 +33,7 @@ fn main() {
     let height = 900;
     let width = 1600;
     let quality = 100; // From 0 to 100
-    let path = "output/image7.jpg";
+    let path = "output/image8.jpg";
     let samples_per_pixel = 100;
     let max_depth = 50;
 
@@ -73,9 +73,9 @@ fn main() {
             }
             col = col / samples_per_pixel as f64;
             let pixel_color = [
-                (clamp(col.x, 0.0, 0.999) * 255.999) as u8,
-                (clamp(col.y, 0.0, 0.999) * 255.999) as u8,
-                (clamp(col.z, 0.0, 0.999) * 255.999) as u8,
+                (clamp(col.x.sqrt(), 0.0, 0.999) * 255.999) as u8,
+                (clamp(col.y.sqrt(), 0.0, 0.999) * 255.999) as u8,
+                (clamp(col.z.sqrt(), 0.0, 0.999) * 255.999) as u8,
             ];
             let pixel = img.get_pixel_mut(x, height - y - 1);
             *pixel = image::Rgb(pixel_color);
