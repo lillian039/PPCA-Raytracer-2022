@@ -19,8 +19,8 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: i32) -> Color {
         return Color::new(0.0, 0.0, 0.0);
     }
     if world.hit(r, 0.001, INFINITY, &mut rec) {
-        //let target: Point = rec.p + rec.normal + Vec3::random_unit_vector();
-        let target: Point = rec.p + Vec3::random_in_hemisphere(&rec.normal);
+        let target: Point = rec.p + rec.normal + Vec3::random_unit_vector();
+        //let target: Point = rec.p + Vec3::random_in_hemisphere(&rec.normal);
         return (ray_color(&Ray::new(rec.p, target - rec.p), world, depth - 1)) * 0.5;
     }
     let unit_direction = Vec3::unit_vector(r.direct);
