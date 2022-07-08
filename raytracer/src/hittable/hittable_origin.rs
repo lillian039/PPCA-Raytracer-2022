@@ -1,6 +1,6 @@
 use super::super::basic_tools;
 use basic_tools::{ray::Ray, vec3::Point, vec3::Vec3};
-
+use rand::Rng;
 #[derive(Clone, Copy, Default)]
 pub struct HitRecord {
     pub p: Point,
@@ -36,4 +36,22 @@ pub const PI: f64 = std::f64::consts::PI;
 
 pub fn degrees_to_radians(degree: f64) -> f64 {
     degree * PI / 180.0
+}
+
+pub fn random_double() -> f64 {
+    rand::thread_rng().gen_range(0..=100) as f64 / 100.0
+}
+
+pub fn random_t(min: f64, max: f64) -> f64 {
+    min + (max - min) * random_double()
+}
+
+pub fn clamp(x: f64, min: f64, max: f64) -> f64 {
+    if x < min {
+        return min;
+    }
+    if x > max {
+        return max;
+    }
+    x
 }

@@ -9,7 +9,7 @@ pub mod hittable;
 use basic_tools::{camera::Camera, ray::Ray, vec3::Color, vec3::Point, vec3::Vec3};
 use hittable::{
     hittable_list::HittableList,
-    hittable_origin::{HitRecord, Hittable},
+    hittable_origin::{clamp, random_double, HitRecord, Hittable},
     sphere::Sphere,
 };
 
@@ -29,7 +29,8 @@ fn main() {
     let height = 900;
     let width = 1600;
     let quality = 100; // From 0 to 100
-    let path = "output/image5.jpg";
+    let path = "output/image6.jpg";
+    let samples_per_pixel = 100;
 
     let camera = Camera::new(2.25, 4.0, 1.0);
 
@@ -58,18 +59,18 @@ fn main() {
 
     for y in 0..height {
         for x in 0..width {
-            let u = x as f64 / (width as f64);
-            let v = y as f64 / (height as f64);
-            let r = Ray {
-                point: camera.origin,
-                direct: camera.lower_left_corner + camera.horizontal * u + camera.vertical * v
-                    - camera.origin,
-            };
-            let col = ray_color(&r, &world);
+            let mut col = Vec3::new(0.0, 0.0, 0.0);
+            for _s in 0..samples_per_pixel {
+                let u = (x as f64 + random_double()) / (width as f64);
+                let v = (y as f64 + random_double()) / (height as f64);
+                let r = camera.get_ray(u, v);
+                col += ray_color(&r, &world);
+            }
+            col = col / samples_per_pixel as f64;
             let pixel_color = [
-                (col.x * 255.999) as u8,
-                (col.y * 255.999) as u8,
-                (col.z * 255.999) as u8,
+                (clamp(col.x, 0.0, 0.999) * 255.999) as u8,
+                (clamp(col.y, 0.0, 0.999) * 255.999) as u8,
+                (clamp(col.z, 0.0, 0.999) * 255.999) as u8,
             ];
             let pixel = img.get_pixel_mut(x, height - y - 1);
             *pixel = image::Rgb(pixel_color);
