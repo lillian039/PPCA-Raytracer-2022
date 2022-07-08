@@ -1,61 +1,26 @@
-use std::{fs::File, process::exit};
+use std::{f64::INFINITY, fs::File, process::exit};
 
 use image::{ImageBuffer, RgbImage};
 
 use console::style;
 use indicatif::{ProgressBar, ProgressStyle};
 pub mod basic_tools;
+pub mod hittable;
 use basic_tools::{camera::Camera, ray::Ray, vec3::Color, vec3::Point, vec3::Vec3};
+use hittable::{
+    hittable_list::HittableList,
+    hittable_origin::{HitRecord, Hittable},
+    sphere::Sphere,
+};
 
-fn hit_sphere(center: Point, radius: f64, r: &Ray) -> f64 {
-    let oc: Vec3 = r.point - center;
-    let a = Vec3::dot(&r.direct, &r.direct);
-    let b = 2.0 * Vec3::dot(&oc, &r.direct);
-    let c = Vec3::dot(&oc, &oc) - radius * radius;
-    let discriminant = b * b - 4.0 * a * c;
-    if discriminant < 0.0 {
-        return -1.0;
-    }
-    (-b - discriminant.sqrt()) / (2.0 * a)
-}
-
-fn ray_color(r: &Ray) -> Color {
-    let t = hit_sphere(
-        Point {
-            x: 0.0,
-            y: 0.0,
-            z: -1.0,
-        },
-        0.5,
-        r,
-    );
-    if t > 0.0 {
-        let n = Vec3::unit_vector(
-            r.at(t)
-                - Vec3 {
-                    x: (0.0),
-                    y: (0.0),
-                    z: (-1.0),
-                },
-        );
-        return Color {
-            x: n.x + 1.0,
-            y: n.y + 1.0,
-            z: n.z + 1.0,
-        } * 0.5;
+fn ray_color(r: &Ray, world: &dyn Hittable) -> Color {
+    let mut rec = HitRecord::new();
+    if world.hit(r, 0.0, INFINITY, &mut rec) {
+        return (rec.normal + Color::new(1.0, 1.0, 1.0)) * 0.5;
     }
     let unit_direction = Vec3::unit_vector(r.direct);
-    let t = 0.5 * (unit_direction.y + 1.0);
-    Color {
-        x: 1.0,
-        y: 1.0,
-        z: 1.0,
-    } * (1.0 - t)
-        + Color {
-            x: 0.5,
-            y: 0.7,
-            z: 1.0,
-        } * t
+    let t = (unit_direction.y() + 1.0) * 0.5;
+    Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t
 }
 fn main() {
     print!("{}[2J", 27 as char); // Clear screen 27 as char --> esc
@@ -64,10 +29,14 @@ fn main() {
     let height = 900;
     let width = 1600;
     let quality = 100; // From 0 to 100
-    let path = "output/image4.jpg";
+    let path = "output/image5.jpg";
 
     let camera = Camera::new(2.25, 4.0, 1.0);
 
+    let mut world = HittableList::new();
+
+    world.add(Box::new(Sphere::new(Point::new(0.0, 0.0, -1.0), 0.5)));
+    world.add(Box::new(Sphere::new(Point::new(0.0, -100.5, -1.0), 100.0)));
     println!(
         "Image size: {}\nJPEG quality: {}",
         style(width.to_string() + "x" + &height.to_string()).yellow(),
@@ -96,7 +65,7 @@ fn main() {
                 direct: camera.lower_left_corner + camera.horizontal * u + camera.vertical * v
                     - camera.origin,
             };
-            let col = ray_color(&r);
+            let col = ray_color(&r, &world);
             let pixel_color = [
                 (col.x * 255.999) as u8,
                 (col.y * 255.999) as u8,

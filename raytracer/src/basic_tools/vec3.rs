@@ -3,7 +3,7 @@ use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Neg, Sub};
 pub type Color = Vec3;
 pub type Point = Vec3;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Vec3 {
     pub x: f64,
     pub y: f64,
@@ -11,7 +11,7 @@ pub struct Vec3 {
 }
 
 impl Vec3 {
-    pub fn new_vec(x: f64, y: f64, z: f64) -> Vec3 {
+    pub fn new(x: f64, y: f64, z: f64) -> Vec3 {
         Vec3 { x, y, z }
     }
     pub fn x(&self) -> f64 {
@@ -34,6 +34,10 @@ impl Vec3 {
 
     pub fn dot(ls: &Self, rs: &Self) -> f64 {
         ls.x * rs.x + ls.y * rs.y + ls.z * rs.z
+    }
+
+    pub fn length_squared(&self) -> f64 {
+        self.x * self.x + self.y * self.y + self.z * self.z
     }
 }
 
