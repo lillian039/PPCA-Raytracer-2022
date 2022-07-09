@@ -15,6 +15,7 @@ pub trait Material {
 
 pub struct Metal {
     pub albebo: Color,
+    pub fuzz: f64,
 }
 
 impl Material for Metal {
@@ -26,16 +27,21 @@ impl Material for Metal {
         scattered: &mut Ray,
     ) -> bool {
         let reflected = Vec3::reflect(Vec3::unit_vector(r_in.direct), rec.normal);
-        *scattered = Ray::new(rec.p, reflected);
+        *scattered = Ray::new(rec.p, reflected + Vec3::random_in_unit_sphere() * self.fuzz);
         *attenuation = self.albebo;
         Vec3::dot(&scattered.direct, &rec.normal) > 0.0
     }
 }
 
 impl Metal {
-    pub fn new(x: f64, y: f64, z: f64) -> Self {
+    pub fn new(al: Color, fuz: f64) -> Self {
+        let mut fuzzz = 1.0;
+        if fuz < fuzzz {
+            fuzzz = fuz;
+        }
         Self {
-            albebo: (Color::new(x, y, z)),
+            albebo: al,
+            fuzz: fuzzz,
         }
     }
 }
