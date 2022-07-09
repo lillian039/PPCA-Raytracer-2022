@@ -17,27 +17,31 @@ impl Sphere {
 }
 //whether hit the shpere t is the time
 impl Hittable for Sphere {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc: Vec3 = r.point - self.center;
         let a = r.direct.length_squared();
         let half_b = Vec3::dot(&oc, &r.direct);
         let c = oc.length_squared() - self.radius * self.radius;
         let discriminant = half_b * half_b - a * c;
         if discriminant < 0.0 {
-            return false;
+            return None;
         }
         let sqrtd = discriminant.sqrt();
         let mut root = (-half_b - sqrtd) / a;
         if root < t_min || t_max < root {
             root = (-half_b + sqrtd) / a;
             if root < t_min || t_max < root {
-                return false;
+                return None;
             }
         }
-        rec.t = root;
-        rec.p = r.at(rec.t);
+        let mut rec = HitRecord {
+            p: r.at(root),
+            normal: Vec3::default(),
+            t: root,
+            front_face: bool::default(),
+        };
         let outward_normal = (rec.p - self.center) / self.radius;
         rec.set_face_normal(r, &outward_normal);
-        true
+        Some(rec)
     }
 }

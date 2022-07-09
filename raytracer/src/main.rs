@@ -1,4 +1,4 @@
-use std::{f64::INFINITY, fs::File, process::exit};
+use std::{f64::INFINITY, fs::File, process::exit, rc::Rc};
 
 use image::{ImageBuffer, RgbImage};
 
@@ -9,16 +9,15 @@ pub mod hittable;
 use basic_tools::{camera::Camera, ray::Ray, vec3::Color, vec3::Point, vec3::Vec3};
 use hittable::{
     hittable_list::HittableList,
-    hittable_origin::{clamp, random_double, HitRecord, Hittable},
+    hittable_origin::{clamp, random_double, Hittable},
     sphere::Sphere,
 };
 
 fn ray_color(r: &Ray, world: &dyn Hittable, depth: i32) -> Color {
-    let mut rec = HitRecord::new();
     if depth <= 0 {
         return Color::new(0.0, 0.0, 0.0);
     }
-    if world.hit(r, 0.001, INFINITY, &mut rec) {
+    if let Some(rec) = world.hit(r, 0.001, INFINITY) {
         let target: Point = rec.p + rec.normal + Vec3::random_unit_vector();
         //let target: Point = rec.p + Vec3::random_in_hemisphere(&rec.normal);
         return (ray_color(&Ray::new(rec.p, target - rec.p), world, depth - 1)) * 0.5;
@@ -42,8 +41,8 @@ fn main() {
 
     let mut world = HittableList::new();
 
-    world.add(Box::new(Sphere::new(Point::new(0.0, 0.0, -1.0), 0.5)));
-    world.add(Box::new(Sphere::new(Point::new(0.0, -100.5, -1.0), 100.0)));
+    world.add(Rc::new(Sphere::new(Point::new(0.0, 0.0, -1.0), 0.5)));
+    world.add(Rc::new(Sphere::new(Point::new(0.0, -100.5, -1.0), 100.0)));
     println!(
         "Image size: {}\nJPEG quality: {}",
         style(width.to_string() + "x" + &height.to_string()).yellow(),

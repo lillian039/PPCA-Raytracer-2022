@@ -1,8 +1,9 @@
 use super::super::basic_tools::ray::Ray;
 use super::hittable_origin::{HitRecord, Hittable};
-#[derive(Default)]
+use std::rc::Rc;
+#[derive(Clone)]
 pub struct HittableList {
-    pub objects: Vec<Box<dyn Hittable>>,
+    pub objects: Vec<Rc<dyn Hittable>>,
 }
 
 impl HittableList {
@@ -10,7 +11,7 @@ impl HittableList {
         self.objects.clear()
     }
 
-    pub fn add(&mut self, object: Box<dyn Hittable>) {
+    pub fn add(&mut self, object: Rc<dyn Hittable>) {
         self.objects.push(object);
     }
 
@@ -22,19 +23,17 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
-        let mut temp_rec: HitRecord = HitRecord::new();
-        let mut hit_anything = false;
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+        let mut rec: Option<HitRecord> = None;
         let mut closest_so_far = t_max;
 
         for object in &self.objects {
-            if object.hit(r, t_min, closest_so_far, &mut temp_rec) {
-                hit_anything = true;
-                closest_so_far = temp_rec.t;
-                *rec = temp_rec;
+            if let Some(temp_rec) = object.hit(r, t_min, closest_so_far) {
+                closest_so_far = temp_rec.t.clone();
+                rec = Some(temp_rec);
                 // rec.clone_from(&temp_rec);
             }
         }
-        hit_anything
+        rec
     }
 }
