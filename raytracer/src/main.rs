@@ -13,7 +13,7 @@ use hittable::{
     hittable_origin::{clamp, random_double, Hittable},
     sphere::Sphere,
 };
-use material::{lambertian::Lambertian, metal::Metal};
+use material::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal};
 fn ray_color(r: &Ray, world: &dyn Hittable, depth: i32) -> Color {
     if depth <= 0 {
         return Color::new(0.0, 0.0, 0.0);
@@ -40,7 +40,7 @@ fn main() {
     let height = 900;
     let width = 1600;
     let quality = 100; // From 0 to 100
-    let path = "output/image12.jpg";
+    let path = "output/image14.jpg";
     let samples_per_pixel = 100;
     let max_depth = 50;
 
@@ -48,8 +48,8 @@ fn main() {
 
     let mut world = HittableList::new();
     let material_ground = Rc::new(Lambertian::new(0.8, 0.8, 0.0));
-    let material_center = Rc::new(Lambertian::new(0.7, 0.3, 0.3));
-    let material_left = Rc::new(Metal::new(Color::new(0.8, 0.8, 0.8), 0.3));
+    let material_center = Rc::new(Dielectric::new(1.5));
+    let material_left = Rc::new(Dielectric::new(1.5));
     let material_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 1.0));
 
     world.add(Rc::new(Sphere::new(

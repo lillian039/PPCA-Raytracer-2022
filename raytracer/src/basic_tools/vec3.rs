@@ -76,6 +76,17 @@ impl Vec3 {
     pub fn reflect(v: Vec3, n: Vec3) -> Self {
         v - n * Vec3::dot(&v, &n) * 2.0
     }
+
+    pub fn refract(inray: Vec3, n: Vec3, eta_ratio: f64) -> Self {
+        //eta_ratio means η/η'
+        let mut cos_theta = Vec3::dot(&-inray, &n);
+        if cos_theta > 1.0 {
+            cos_theta = 1.0;
+        }
+        let r_out_perp = (inray + n * cos_theta) * eta_ratio;
+        let r_out_parallel = n * (-(1.0 - r_out_perp.length_squared()).abs().sqrt());
+        r_out_perp + r_out_parallel
+    }
 }
 
 impl Add for Vec3 {
