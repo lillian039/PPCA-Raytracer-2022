@@ -6,21 +6,28 @@ use console::style;
 use indicatif::{ProgressBar, ProgressStyle};
 pub mod basic_tools;
 pub mod hittable;
+pub mod material;
 use basic_tools::{camera::Camera, ray::Ray, vec3::Color, vec3::Point, vec3::Vec3};
 use hittable::{
     hittable_list::HittableList,
     hittable_origin::{clamp, random_double, Hittable},
     sphere::Sphere,
 };
-
+use material::{lambertian::Lambertian, metal::Metal};
 fn ray_color(r: &Ray, world: &dyn Hittable, depth: i32) -> Color {
     if depth <= 0 {
         return Color::new(0.0, 0.0, 0.0);
     }
     if let Some(rec) = world.hit(r, 0.001, INFINITY) {
-        let target: Point = rec.p + rec.normal + Vec3::random_unit_vector();
-        //let target: Point = rec.p + Vec3::random_in_hemisphere(&rec.normal);
-        return (ray_color(&Ray::new(rec.p, target - rec.p), world, depth - 1)) * 0.5;
+        let mut scattered = Ray::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 0.0));
+        let mut attenuation = Vec3::new(0.0, 0.0, 0.0);
+        if rec
+            .mat_ptr
+            .scatter(r, &rec, &mut attenuation, &mut scattered)
+        {
+            return ray_color(&scattered, world, depth - 1) * attenuation;
+        }
+        return Color::new(0.0, 0.0, 0.0);
     }
     let unit_direction = Vec3::unit_vector(r.direct);
     let t = (unit_direction.y + 1.0) * 0.5;
@@ -33,16 +40,39 @@ fn main() {
     let height = 900;
     let width = 1600;
     let quality = 100; // From 0 to 100
-    let path = "output/image10.jpg";
+    let path = "output/image11.jpg";
     let samples_per_pixel = 100;
     let max_depth = 50;
 
     let camera = Camera::new(2.25, 4.0, 1.0);
 
     let mut world = HittableList::new();
+    let material_ground = Rc::new(Lambertian::new(0.8, 0.8, 0.0));
+    let material_center = Rc::new(Lambertian::new(0.7, 0.3, 0.3));
+    let material_left = Rc::new(Metal::new(0.8, 0.8, 0.8));
+    let material_right = Rc::new(Metal::new(0.8, 0.6, 0.2));
 
-    world.add(Rc::new(Sphere::new(Point::new(0.0, 0.0, -1.0), 0.5)));
-    world.add(Rc::new(Sphere::new(Point::new(0.0, -100.5, -1.0), 100.0)));
+    world.add(Rc::new(Sphere::new(
+        Point::new(0.0, -100.5, -1.0),
+        100.0,
+        material_ground,
+    )));
+    world.add(Rc::new(Sphere::new(
+        Point::new(0.0, 0.0, -1.0),
+        0.5,
+        material_center,
+    )));
+    world.add(Rc::new(Sphere::new(
+        Point::new(-1.0, 0.0, -1.0),
+        0.5,
+        material_left,
+    )));
+    world.add(Rc::new(Sphere::new(
+        Point::new(1.0, 0.0, -1.0),
+        0.5,
+        material_right,
+    )));
+
     println!(
         "Image size: {}\nJPEG quality: {}",
         style(width.to_string() + "x" + &height.to_string()).yellow(),

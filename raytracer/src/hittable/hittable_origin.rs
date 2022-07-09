@@ -1,12 +1,15 @@
 use super::super::basic_tools;
+use super::super::material::metal::Material;
 use basic_tools::{ray::Ray, vec3::Point, vec3::Vec3};
 use rand::Rng;
-#[derive(Clone, Copy, Default)]
+use std::rc::Rc;
+#[derive(Clone)]
 pub struct HitRecord {
     pub p: Point,
     pub normal: Vec3,
     pub t: f64,
     pub front_face: bool,
+    pub mat_ptr: Rc<dyn Material>,
 }
 
 impl HitRecord {
@@ -16,15 +19,6 @@ impl HitRecord {
             self.normal = *outward_normal;
         } else {
             self.normal = -*outward_normal;
-        }
-    }
-
-    pub fn new() -> Self {
-        Self {
-            p: (Point::new(0.0, 0.0, 0.0)),
-            normal: (Vec3::new(0.0, 0.0, 0.0)),
-            t: (0.0),
-            front_face: (true),
         }
     }
 }

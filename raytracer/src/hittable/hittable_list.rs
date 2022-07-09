@@ -1,7 +1,7 @@
 use super::super::basic_tools::ray::Ray;
 use super::hittable_origin::{HitRecord, Hittable};
 use std::rc::Rc;
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct HittableList {
     pub objects: Vec<Rc<dyn Hittable>>,
 }
@@ -29,7 +29,7 @@ impl Hittable for HittableList {
 
         for object in &self.objects {
             if let Some(temp_rec) = object.hit(r, t_min, closest_so_far) {
-                closest_so_far = temp_rec.t.clone();
+                closest_so_far = temp_rec.t;
                 rec = Some(temp_rec);
                 // rec.clone_from(&temp_rec);
             }
