@@ -1,5 +1,5 @@
 use std::{
-    f64::{consts::PI, INFINITY},
+    f64::{ INFINITY},
     fs::File,
     process::exit,
     rc::Rc,
@@ -18,7 +18,7 @@ use hittable::{
     hittable_origin::{clamp, random_double, Hittable},
     sphere::Sphere,
 };
-use material::{lambertian::Lambertian};
+use material::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal};
 fn ray_color(r: &Ray, world: &dyn Hittable, depth: i32) -> Color {
     if depth <= 0 {
         return Color::new(0.0, 0.0, 0.0);
@@ -45,27 +45,47 @@ fn main() {
     let height = 900;
     let width = 1600;
     let quality = 100; // From 0 to 100
-    let path = "output/image17.jpg";
+    let path = "output/image18.jpg";
     let samples_per_pixel = 100;
     let max_depth = 50;
     let aspect_ratio = 16.0 / 9.0;
-    let camera = Camera::new(90.0, aspect_ratio);
-    let r = (PI / 4.0).cos();
+    let camera = Camera::new(
+        Point::new(-2.0, 2.0, 1.0),
+        Point::new(0.0, 0.0, -1.0),
+        Point::new(0.0, 1.0, 0.0),
+        90.0,
+        aspect_ratio,
+    );
 
     let mut world = HittableList::new();
-    //  let material_ground = Rc::new(Lambertian::new(0.8, 0.8, 0.0));
-    //  let material_center = Rc::new(Lambertian::new(0.1, 0.2, 0.5));
-    let material_left = Rc::new(Lambertian::new(0.0, 0.0, 1.0));
-    let material_right = Rc::new(Lambertian::new(1.0, 0.0, 0.0));
+    let material_ground = Rc::new(Lambertian::new(0.8, 0.8, 0.0));
+    let material_center = Rc::new(Lambertian::new(0.1, 0.2, 0.5));
+    let material_left = Rc::new(Dielectric::new(1.5));
+    let material_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0));
 
     world.add(Rc::new(Sphere::new(
-        Point::new(-r, 0.0, -1.0),
-        r,
+        Point::new(0.0, -100.5, -1.0),
+        100.0,
+        material_ground,
+    )));
+    world.add(Rc::new(Sphere::new(
+        Point::new(0.0, 0.0, -1.0),
+        0.5,
+        material_center,
+    )));
+    world.add(Rc::new(Sphere::new(
+        Point::new(-1.0, 0.0, -1.0),
+        0.5,
+        material_left.clone(),
+    )));
+    world.add(Rc::new(Sphere::new(
+        Point::new(-1.0, 0.0, -1.0),
+        -0.4,
         material_left,
     )));
     world.add(Rc::new(Sphere::new(
-        Point::new(r, 0.0, -1.0),
-        r,
+        Point::new(1.0, 0.0, -1.0),
+        0.5,
         material_right,
     )));
 

@@ -56,6 +56,14 @@ impl Vec3 {
         ls.x * rs.x + ls.y * rs.y + ls.z * rs.z
     }
 
+    pub fn cross(u: Vec3, v: Vec3) -> Self {
+        Self {
+            x: (u.y * v.z - u.z * v.y),
+            y: (u.z * v.x - u.x * v.z),
+            z: (u.x * v.y - u.y * v.x),
+        }
+    }
+
     pub fn length_squared(&self) -> f64 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
