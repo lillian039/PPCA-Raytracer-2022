@@ -6,9 +6,9 @@
 
 ## Book 1
 
-final scence 低像素渲染结果：
+final scence 渲染结果：
 
-![img](https://raw.githubusercontent.com/lillian039/PPCA-Raytracer-2022/main/img/image211.jpg))
+![img](https://raw.githubusercontent.com/lillian039/PPCA-Raytracer-2022/main/img/image211.jpg)
 
 完成基础函数 basic_tools 系列：
 
@@ -45,3 +45,4 @@ final scence 低像素渲染结果：
 - sphere.rs
   - 物品球的抽象类，通过球的方程确定球
 
+## Book 2
