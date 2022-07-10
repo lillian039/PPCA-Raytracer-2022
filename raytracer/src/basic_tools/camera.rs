@@ -8,6 +8,10 @@ pub struct Camera {
     pub horizontal: Vec3,
     pub vertical: Vec3,
     pub lower_left_corner: Vec3,
+    pub u: Vec3,
+    pub v: Vec3,
+    pub w: Vec3,
+    pub lens_radius: f64,
 }
 
 pub const PI: f64 = std::f64::consts::PI;
@@ -17,31 +21,45 @@ pub fn degrees_to_radians(degree: f64) -> f64 {
 }
 
 impl Camera {
-    pub fn new(lookfrom: Point, lookat: Point, vup: Vec3, vfov: f64, aspect_ratio: f64) -> Camera {
+    pub fn new(
+        lookfrom: Point,
+        lookat: Point,
+        vup: Vec3,
+        vfov: f64,
+        aspect_ratio: f64,
+        aperture: f64,
+        focus_dist: f64,
+    ) -> Camera {
         //fov: 视野 vfov:vertical field of view in degrees
         let theta = degrees_to_radians(vfov);
         let h = (theta / 2.0).tan();
         let viewport_height = 2.0 * h;
         let viewport_width = aspect_ratio * viewport_height;
 
-        let w = Vec3::unit_vector(lookfrom - lookat);
-        let u = Vec3::unit_vector(Vec3::cross(vup, w));
-        let v = Vec3::cross(w, u);
+        let w_ = Vec3::unit_vector(lookfrom - lookat);
+        let u_ = Vec3::unit_vector(Vec3::cross(vup, w_));
+        let v_ = Vec3::cross(w_, u_);
         let ori = lookfrom;
-        let hori = u * viewport_width;
-        let vert = v * viewport_height;
+        let hori = u_ * viewport_width * focus_dist;
+        let vert = v_ * viewport_height * focus_dist;
         Camera {
             origin: lookfrom,
             horizontal: hori,
             vertical: vert,
-            lower_left_corner: ori - hori / 2.0 - vert / 2.0 - w,
+            lower_left_corner: ori - hori / 2.0 - vert / 2.0 - w_ * focus_dist,
+            u: u_,
+            v: v_,
+            w: w_,
+            lens_radius: aperture / 2.0,
         }
     }
 
     pub fn get_ray(&self, s: f64, t: f64) -> Ray {
+        let rd = Vec3::random_in_unit_disk() * self.lens_radius;
+        let offset = self.u * rd.x + self.v * rd.y;
         Ray::new(
-            self.origin,
-            self.lower_left_corner + self.horizontal * s + self.vertical * t - self.origin,
+            self.origin + offset,
+            self.lower_left_corner + self.horizontal * s + self.vertical * t - self.origin - offset,
         )
     }
 }

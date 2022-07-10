@@ -26,12 +26,6 @@ pub trait Hittable {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
 }
 
-pub const PI: f64 = std::f64::consts::PI;
-
-pub fn degrees_to_radians(degree: f64) -> f64 {
-    degree * PI / 180.0
-}
-
 pub fn random_double() -> f64 {
     rand::thread_rng().gen_range(0..=100) as f64 / 100.0
 }

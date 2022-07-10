@@ -1,6 +1,5 @@
 use super::super::hittable::hittable_origin::{random_double, random_t};
 use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Neg, Sub};
-
 pub type Color = Vec3;
 pub type Point = Vec3;
 
@@ -94,6 +93,15 @@ impl Vec3 {
         let r_out_perp = (inray + n * cos_theta) * eta_ratio;
         let r_out_parallel = n * (-(1.0 - r_out_perp.length_squared()).abs().sqrt());
         r_out_perp + r_out_parallel
+    }
+
+    pub fn random_in_unit_disk() -> Self {
+        // for defocus blur
+        let mut p = Vec3::new(random_t(-1.0, 1.0), random_t(-1.0, 1.0), 0.0);
+        while p.length_squared() >= 1.0 {
+            p = Vec3::new(random_t(-1.0, 1.0), random_t(-1.0, 1.0), 0.0);
+        }
+        p
     }
 }
 
