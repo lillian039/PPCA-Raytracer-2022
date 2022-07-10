@@ -40,7 +40,7 @@ fn main() {
     let height = 900;
     let width = 1600;
     let quality = 100; // From 0 to 100
-    let path = "output/image15.jpg";
+    let path = "output/image16.jpg";
     let samples_per_pixel = 100;
     let max_depth = 50;
 
@@ -65,6 +65,11 @@ fn main() {
     world.add(Rc::new(Sphere::new(
         Point::new(-1.0, 0.0, -1.0),
         0.5,
+        material_left.clone(),
+    )));
+    world.add(Rc::new(Sphere::new(
+        Point::new(-1.0, 0.0, -1.0),
+        -0.4,
         material_left,
     )));
     world.add(Rc::new(Sphere::new(

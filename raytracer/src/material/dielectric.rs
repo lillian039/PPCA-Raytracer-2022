@@ -2,8 +2,8 @@ use super::super::basic_tools::{
     ray::Ray,
     vec3::{Color, Vec3},
 };
+use super::super::hittable::hittable_origin::random_double;
 use super::metal::Material;
-
 pub struct Dielectric {
     pub ir: f64, //index of refrection
 }
@@ -11,6 +11,11 @@ pub struct Dielectric {
 impl Dielectric {
     pub fn new(index_of_ref: f64) -> Self {
         Self { ir: (index_of_ref) }
+    }
+
+    fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
+        let r0 = ((1.0 - ref_idx) / (1.0 + ref_idx)).powi(2);
+        r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
     }
 }
 pub fn min(ls: f64, rs: f64) -> f64 {
@@ -37,7 +42,9 @@ impl Material for Dielectric {
         let cos_theta = min(Vec3::dot(&-unit_direction, &rec.normal), 1.0);
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
         let cannot_refract = refraction_ratio * sin_theta > 1.0;
-        let direction = if cannot_refract {
+        let direction = if cannot_refract
+            || Dielectric::reflectance(cos_theta, refraction_ratio) > random_double()
+        {
             Vec3::reflect(unit_direction, rec.normal)
         } else {
             Vec3::refract(unit_direction, rec.normal, refraction_ratio)
