@@ -8,7 +8,7 @@
 
 final scence 低像素渲染结果：
 
-![image211](D:\a_homework_of_c++\1-3_semester\PPCA-Raytracer-2022\img\image211.jpg)
+![img](https://raw.githubusercontent.com/lillian039/PPCA-Raytracer-2022/main/img/image211.jpg))
 
 完成基础函数 basic_tools 系列：
 
