@@ -1,9 +1,4 @@
-use std::{
-    f64::{ INFINITY},
-    fs::File,
-    process::exit,
-    rc::Rc,
-};
+use std::{f64::INFINITY, fs::File, process::exit, rc::Rc};
 
 use image::{ImageBuffer, RgbImage};
 
@@ -45,7 +40,7 @@ fn main() {
     let height = 900;
     let width = 1600;
     let quality = 100; // From 0 to 100
-    let path = "output/image18.jpg";
+    let path = "output/image19.jpg";
     let samples_per_pixel = 100;
     let max_depth = 50;
     let aspect_ratio = 16.0 / 9.0;
@@ -53,7 +48,7 @@ fn main() {
         Point::new(-2.0, 2.0, 1.0),
         Point::new(0.0, 0.0, -1.0),
         Point::new(0.0, 1.0, 0.0),
-        90.0,
+        20.0,
         aspect_ratio,
     );
 
