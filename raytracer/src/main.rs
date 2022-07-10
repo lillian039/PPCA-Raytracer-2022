@@ -1,4 +1,4 @@
-use std::{f64::INFINITY, fs::File, process::exit, rc::Rc};
+use std::{f64::INFINITY, fs::File, process::exit};
 
 use image::{ImageBuffer, RgbImage};
 
@@ -11,9 +11,7 @@ use basic_tools::{camera::Camera, ray::Ray, vec3::Color, vec3::Point, vec3::Vec3
 use hittable::{
     hittable_list::HittableList,
     hittable_origin::{clamp, random_double, Hittable},
-    sphere::Sphere,
 };
-use material::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal};
 fn ray_color(r: &Ray, world: &dyn Hittable, depth: i32) -> Color {
     if depth <= 0 {
         return Color::new(0.0, 0.0, 0.0);
@@ -37,18 +35,18 @@ fn main() {
     print!("{}[2J", 27 as char); // Clear screen 27 as char --> esc
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char); // Set cursor position as 1,1
 
-    let height = 900;
-    let width = 1600;
+    let aspect_ratio = 3.0 / 2.0;
+    let height = 2000;
+    let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/image20.jpg";
-    let samples_per_pixel = 100;
+    let path = "output/image21.jpg";
+    let samples_per_pixel = 500;
     let max_depth = 50;
-    let aspect_ratio = 16.0 / 9.0;
-    let lookfrom = Point::new(3.0, 3.0, 2.0);
-    let lookat = Point::new(0.0, 0.0, -1.0);
+    let lookfrom = Point::new(13.0, 2.0, 3.0);
+    let lookat = Point::new(0.0, 0.0, 0.0);
     let vup = Vec3::new(0.0, 1.0, 0.0);
-    let dist_to_focus = (lookfrom - lookat).length();
-    let aperture = 2.0;
+    let dist_to_focus = 10.0;
+    let aperture = 0.1;
     let camera = Camera::new(
         lookfrom,
         lookat,
@@ -59,37 +57,7 @@ fn main() {
         dist_to_focus,
     );
 
-    let mut world = HittableList::new();
-    let material_ground = Rc::new(Lambertian::new(0.8, 0.8, 0.0));
-    let material_center = Rc::new(Lambertian::new(0.1, 0.2, 0.5));
-    let material_left = Rc::new(Dielectric::new(1.5));
-    let material_right = Rc::new(Metal::new(Color::new(0.8, 0.6, 0.2), 0.0));
-
-    world.add(Rc::new(Sphere::new(
-        Point::new(0.0, -100.5, -1.0),
-        100.0,
-        material_ground,
-    )));
-    world.add(Rc::new(Sphere::new(
-        Point::new(0.0, 0.0, -1.0),
-        0.5,
-        material_center,
-    )));
-    world.add(Rc::new(Sphere::new(
-        Point::new(-1.0, 0.0, -1.0),
-        0.5,
-        material_left.clone(),
-    )));
-    world.add(Rc::new(Sphere::new(
-        Point::new(-1.0, 0.0, -1.0),
-        -0.4,
-        material_left,
-    )));
-    world.add(Rc::new(Sphere::new(
-        Point::new(1.0, 0.0, -1.0),
-        0.5,
-        material_right,
-    )));
+    let world = HittableList::random_scene();
 
     println!(
         "Image size: {}\nJPEG quality: {}",
