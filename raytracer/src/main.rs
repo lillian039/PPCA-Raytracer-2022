@@ -95,8 +95,8 @@ fn main() {
             ];
             let pixel = img.get_pixel_mut(x, height - y - 1);
             *pixel = image::Rgb(pixel_color);
-            progress.inc(1);
         }
+        progress.inc(1);
     }
     progress.finish();
 
