@@ -1,3 +1,5 @@
+use crate::hittable::hittable_origin::random_t;
+
 use super::{
     ray::Ray,
     vec3::{Point, Vec3},
@@ -13,6 +15,8 @@ pub struct Camera {
     pub v: Vec3,
     pub w: Vec3,
     pub lens_radius: f64,
+    pub time0: f64,
+    pub time1: f64,
 }
 
 pub const PI: f64 = std::f64::consts::PI;
@@ -30,6 +34,8 @@ impl Camera {
         aspect_ratio: f64,
         aperture: f64,
         focus_dist: f64,
+        t0: f64,
+        t1: f64,
     ) -> Camera {
         //fov: 视野 vfov:vertical field of view in degrees
         let theta = degrees_to_radians(vfov);
@@ -52,6 +58,8 @@ impl Camera {
             v: v_,
             w: w_,
             lens_radius: aperture / 2.0,
+            time0: t0,
+            time1: t1,
         }
     }
 
@@ -61,6 +69,7 @@ impl Camera {
         Ray::new(
             self.origin + offset,
             self.lower_left_corner + self.horizontal * s + self.vertical * t - self.origin - offset,
+            random_t(self.time0, self.time1),
         )
     }
 }

@@ -2,12 +2,13 @@ use super::super::material::{dielectric::Dielectric, lambertian::Lambertian, met
 use super::{
     super::basic_tools::{
         ray::Ray,
-        vec3::{Color, Point},
+        vec3::{Color, Point, Vec3},
     },
     hittable_origin::random_t,
 };
 use super::{
     hittable_origin::{random_double, HitRecord, Hittable},
+    moving_sphere::MovingSphere,
     sphere::Sphere,
 };
 use std::sync::Arc;
@@ -54,7 +55,15 @@ impl HittableList {
                         let albedo = Color::random() * Color::random();
                         let sphere_material =
                             Arc::new(Lambertian::new(albedo.x, albedo.y, albedo.z));
-                        world.add(Arc::new(Sphere::new(center, 0.2, sphere_material)));
+                        let center2 = center + Vec3::new(0.0, random_t(0.0, 0.5), 0.0);
+                        world.add(Arc::new(MovingSphere::new(
+                            center,
+                            center2,
+                            0.0,
+                            1.0,
+                            0.2,
+                            sphere_material,
+                        )));
                     } else if choose_mat < 0.95 {
                         let albedo = Color::random_range(0.5, 1.0);
                         let fuzz = random_t(0.0, 0.5);

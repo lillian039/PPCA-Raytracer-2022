@@ -22,7 +22,7 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: i32) -> Color {
         return Color::new(0.0, 0.0, 0.0);
     }
     if let Some(rec) = world.hit(r, 0.001, INFINITY) {
-        let mut scattered = Ray::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 0.0));
+        let mut scattered = Ray::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 0.0), 0.0);
         let mut attenuation = Vec3::new(0.0, 0.0, 0.0);
         if rec
             .mat_ptr
@@ -40,11 +40,11 @@ fn main() {
     print!("{}[2J", 27 as char); // Clear screen 27 as char --> esc
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char); // Set cursor position as 1,1
 
-    let aspect_ratio = 256.0 / 160.0;
-    let height = 1600;
+    let aspect_ratio = 16.0 / 9.0;
+    let height = 400;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/multithread_image21.jpg";
+    let path = "output/book2_image1.jpg";
     let samples_per_pixel = 100;
     let max_depth = 50;
     let lookfrom = Point::new(13.0, 2.0, 3.0);
@@ -60,6 +60,8 @@ fn main() {
         aspect_ratio,
         aperture,
         dist_to_focus,
+        0.0,
+        1.0,
     );
 
     let world = HittableList::random_scene();
@@ -77,7 +79,7 @@ fn main() {
     multiprogress.set_move_cursor(true);
 
     let thread_total = 4;
-    let mut threads: Vec<_> = Vec::new();
+    let mut threads = Vec::new();
     let mut output_pixel = Vec::new();
     let hight_line = height / thread_total;
 
