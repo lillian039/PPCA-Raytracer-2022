@@ -25,6 +25,7 @@ pub fn degrees_to_radians(degree: f64) -> f64 {
     degree * PI / 180.0
 }
 
+#[allow(clippy::too_many_arguments)]
 impl Camera {
     pub fn new(
         lookfrom: Point,

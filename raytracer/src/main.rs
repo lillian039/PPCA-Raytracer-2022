@@ -41,7 +41,7 @@ fn main() {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char); // Set cursor position as 1,1
 
     let aspect_ratio = 16.0 / 9.0;
-    let height = 400;
+    let height = 225;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
     let path = "output/book2_image1.jpg";
