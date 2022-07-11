@@ -35,12 +35,12 @@ fn main() {
     print!("{}[2J", 27 as char); // Clear screen 27 as char --> esc
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char); // Set cursor position as 1,1
 
-    let aspect_ratio = 3.0 / 2.0;
-    let height = 200;
+    let aspect_ratio = 2560.0 / 1600.0;
+    let height = 1600;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/image21.jpg";
-    let samples_per_pixel = 500;
+    let path = "output/image2100.jpg";
+    let samples_per_pixel = 100;
     let max_depth = 50;
     let lookfrom = Point::new(13.0, 2.0, 3.0);
     let lookat = Point::new(0.0, 0.0, 0.0);
