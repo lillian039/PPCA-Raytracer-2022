@@ -2,16 +2,16 @@ use super::super::basic_tools;
 use super::super::material::metal::Material;
 use super::hittable_origin::{HitRecord, Hittable};
 use basic_tools::{ray::Ray, vec3::Point, vec3::Vec3};
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub struct Sphere {
     pub center: Point,
     pub radius: f64,
-    pub mat_ptr: Rc<dyn Material>,
+    pub mat_ptr: Arc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(cen: Point, r: f64, mat_ptr: Rc<dyn Material>) -> Self {
+    pub fn new(cen: Point, r: f64, mat_ptr: Arc<dyn Material>) -> Self {
         Self {
             center: (cen),
             radius: (r),

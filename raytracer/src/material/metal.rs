@@ -3,7 +3,7 @@ use super::super::basic_tools::{
     vec3::{Color, Vec3},
 };
 use super::super::hittable::hittable_origin::HitRecord;
-pub trait Material {
+pub trait Material: Send + Sync {
     fn scatter(
         &self,
         r_in: &Ray,

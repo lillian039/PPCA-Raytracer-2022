@@ -2,14 +2,14 @@ use super::super::basic_tools;
 use super::super::material::metal::Material;
 use basic_tools::{ray::Ray, vec3::Point, vec3::Vec3};
 use rand::Rng;
-use std::rc::Rc;
+use std::sync::Arc;
 #[derive(Clone)]
 pub struct HitRecord {
     pub p: Point,
     pub normal: Vec3,
     pub t: f64,
     pub front_face: bool,
-    pub mat_ptr: Rc<dyn Material>,
+    pub mat_ptr: Arc<dyn Material>,
 }
 
 impl HitRecord {
@@ -22,7 +22,7 @@ impl HitRecord {
         }
     }
 }
-pub trait Hittable {
+pub trait Hittable: Send + Sync {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
 }
 

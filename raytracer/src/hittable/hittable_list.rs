@@ -10,10 +10,10 @@ use super::{
     hittable_origin::{random_double, HitRecord, Hittable},
     sphere::Sphere,
 };
-use std::rc::Rc;
+use std::sync::Arc;
 #[derive(Clone, Default)]
 pub struct HittableList {
-    pub objects: Vec<Rc<dyn Hittable>>,
+    pub objects: Vec<Arc<dyn Hittable>>,
 }
 
 impl HittableList {
@@ -21,7 +21,7 @@ impl HittableList {
         self.objects.clear()
     }
 
-    pub fn add(&mut self, object: Rc<dyn Hittable>) {
+    pub fn add(&mut self, object: Arc<dyn Hittable>) {
         self.objects.push(object);
     }
 
@@ -33,8 +33,8 @@ impl HittableList {
 
     pub fn random_scene() -> HittableList {
         let mut world = HittableList::default();
-        let ground_material = Rc::new(Lambertian::new(0.5, 0.5, 0.5));
-        world.add(Rc::new(Sphere::new(
+        let ground_material = Arc::new(Lambertian::new(0.5, 0.5, 0.5));
+        world.add(Arc::new(Sphere::new(
             Point::new(0.0, -1000.0, 0.0),
             1000.0,
             ground_material,
@@ -53,34 +53,34 @@ impl HittableList {
                     if choose_mat < 0.8 {
                         let albedo = Color::random() * Color::random();
                         let sphere_material =
-                            Rc::new(Lambertian::new(albedo.x, albedo.y, albedo.z));
-                        world.add(Rc::new(Sphere::new(center, 0.2, sphere_material)));
+                            Arc::new(Lambertian::new(albedo.x, albedo.y, albedo.z));
+                        world.add(Arc::new(Sphere::new(center, 0.2, sphere_material)));
                     } else if choose_mat < 0.95 {
                         let albedo = Color::random_range(0.5, 1.0);
                         let fuzz = random_t(0.0, 0.5);
-                        let sphere_material = Rc::new(Metal::new(albedo, fuzz));
-                        world.add(Rc::new(Sphere::new(center, 0.2, sphere_material)));
+                        let sphere_material = Arc::new(Metal::new(albedo, fuzz));
+                        world.add(Arc::new(Sphere::new(center, 0.2, sphere_material)));
                     } else {
-                        let sphere_material = Rc::new(Dielectric::new(1.5));
-                        world.add(Rc::new(Sphere::new(center, 0.2, sphere_material)));
+                        let sphere_material = Arc::new(Dielectric::new(1.5));
+                        world.add(Arc::new(Sphere::new(center, 0.2, sphere_material)));
                     }
                 }
             }
         }
-        let material_1 = Rc::new(Dielectric::new(1.5));
-        world.add(Rc::new(Sphere::new(
+        let material_1 = Arc::new(Dielectric::new(1.5));
+        world.add(Arc::new(Sphere::new(
             Point::new(0.0, 1.0, 0.0),
             1.0,
             material_1,
         )));
-        let material_2 = Rc::new(Lambertian::new(0.4, 0.2, 0.1));
-        world.add(Rc::new(Sphere::new(
+        let material_2 = Arc::new(Lambertian::new(0.4, 0.2, 0.1));
+        world.add(Arc::new(Sphere::new(
             Point::new(-4.0, 1.0, 0.0),
             1.0,
             material_2,
         )));
-        let material_3 = Rc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
-        world.add(Rc::new(Sphere::new(
+        let material_3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
+        world.add(Arc::new(Sphere::new(
             Point::new(4.0, 1.0, 0.0),
             1.0,
             material_3,

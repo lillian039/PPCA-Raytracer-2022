@@ -3,6 +3,7 @@ use super::{
     vec3::{Point, Vec3},
 };
 
+#[derive(Clone, Copy)]
 pub struct Camera {
     pub origin: Point,
     pub horizontal: Vec3,
