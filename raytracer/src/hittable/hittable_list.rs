@@ -103,6 +103,26 @@ impl HittableList {
         )));
         world
     }
+
+    pub fn two_sphere() -> HittableList {
+        let mut objects = HittableList::default();
+        let checker = Arc::new(CheckerTexture::new_col(
+            &Color::new(0.2, 0.3, 0.1),
+            &Color::new(0.9, 0.9, 0.9),
+        ));
+        let sphere_material = Arc::new(Lambertian::newp(checker));
+        objects.add(Arc::new(Sphere::new(
+            Point::new(0.0, -10.0, 0.0),
+            10.0,
+            sphere_material.clone(),
+        )));
+        objects.add(Arc::new(Sphere::new(
+            Point::new(0.0, 10.0, 0.0),
+            10.0,
+            sphere_material,
+        )));
+        objects
+    }
 }
 
 impl Hittable for HittableList {

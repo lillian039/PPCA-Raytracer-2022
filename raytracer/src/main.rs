@@ -13,7 +13,7 @@ pub mod basic_tools;
 pub mod hittable;
 pub mod material;
 pub mod texture;
-use basic_tools::{camera::Camera, ray::Ray, vec3::Color, vec3::Point, vec3::Vec3};
+use basic_tools::{camera::Camera, ray::Ray, vec3::Color, vec3::Vec3};
 use hittable::{
     bvh::BVHNode,
     hittable_list::HittableList,
@@ -52,25 +52,12 @@ fn main() {
     let path = "output/book2_image2.jpg";
     let samples_per_pixel = 100;
     let max_depth = 50;
-    let lookfrom = Point::new(13.0, 2.0, 3.0);
-    let lookat = Point::new(0.0, 0.0, 0.0);
-    let vup = Vec3::new(0.0, 1.0, 0.0);
-    let dist_to_focus = 10.0;
-    let aperture = 0.1;
-    let camera = Camera::new(
-        lookfrom,
-        lookat,
-        vup,
-        20.0,
-        aspect_ratio,
-        aperture,
-        dist_to_focus,
-        0.0,
-        1.0,
-    );
+  //  let camera = Camera::new_two_sphere();
 
-    let world = HittableList::random_scene();
-    let bvhworld = BVHNode::new(world.objects.clone(), 0, world.objects.len() - 1, 0.0, 1.0);
+   // let world = HittableList::two_sphere();
+    let camera=Camera::new_random_scence();
+    let world=HittableList::random_scene();
+    let bvhworld = BVHNode::new(world.objects.clone(), 0, world.objects.len(), 0.0, 1.0);
 
     println!(
         "Image size: {}\nJPEG quality: {}",

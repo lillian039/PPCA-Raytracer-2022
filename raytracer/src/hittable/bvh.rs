@@ -54,7 +54,7 @@ impl BVHNode {
                 tmp_right = Some(objects[start].clone());
             }
         } else {
-            objects[start..=end].sort_by(|a, b| box_compare(a, b, axis));
+            objects[start..end].sort_by(|a, b| box_compare(a, b, axis));
             let mid = start + object_span / 2;
             tmp_left = Some(Arc::new(BVHNode::new(
                 objects.clone(),

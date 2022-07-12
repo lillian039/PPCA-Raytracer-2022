@@ -64,6 +64,46 @@ impl Camera {
         }
     }
 
+    pub fn new_random_scence() -> Self {
+        let aspect_ratio = 16.0 / 9.0;
+        let lookfrom = Point::new(13.0, 2.0, 3.0);
+        let lookat = Point::new(0.0, 0.0, 0.0);
+        let vup = Vec3::new(0.0, 1.0, 0.0);
+        let dist_to_focus = 10.0;
+        let aperture = 0.1;
+        Camera::new(
+            lookfrom,
+            lookat,
+            vup,
+            20.0,
+            aspect_ratio,
+            aperture,
+            dist_to_focus,
+            0.0,
+            1.0,
+        )
+    }
+
+    pub fn new_two_sphere() -> Self {
+        let aspect_ratio = 16.0 / 9.0;
+        let lookfrom = Point::new(13.0, 2.0, 3.0);
+        let lookat = Point::new(0.0, 0.0, 0.0);
+        let vup = Vec3::new(0.0, 1.0, 0.0);
+        let dist_to_focus = 10.0;
+        let aperture = 0.0;
+        Camera::new(
+            lookfrom,
+            lookat,
+            vup,
+            20.0,
+            aspect_ratio,
+            aperture,
+            dist_to_focus,
+            0.0,
+            1.0,
+        )
+    }
+
     pub fn get_ray(&self, s: f64, t: f64) -> Ray {
         let rd = Vec3::random_in_unit_disk() * self.lens_radius;
         let offset = self.u * rd.x + self.v * rd.y;

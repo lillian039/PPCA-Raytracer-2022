@@ -51,7 +51,7 @@ impl CheckerTexture {
 
 impl Texture for CheckerTexture {
     fn value(&self, u: f64, v: f64, p: &Point) -> Color {
-        let sines = (5.0 * p.x).sin() * (5.0 * p.y).sin() * (5.0 * p.z).sin();
+        let sines = (10.0 * p.x).sin() * (10.0 * p.y).sin() * (10.0 * p.z).sin();
         if sines < 0.0 {
             return self.odd.as_ref().unwrap().value(u, v, p);
         }
