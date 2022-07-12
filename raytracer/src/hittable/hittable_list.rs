@@ -101,29 +101,37 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64,rec: &mut HitRecord) -> bool {
-        let mut tmp_rec=HitRecord::default();
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+        let mut tmp_rec = HitRecord::default();
         let mut closest_so_far = t_max;
-        let mut hit_anything=false;
+        let mut hit_anything = false;
 
         for object in &self.objects {
-            if object.hit(r, t_min, closest_so_far,&mut tmp_rec) {
-                hit_anything=true;
-               *rec = tmp_rec.clone();
-               closest_so_far = tmp_rec.t;
+            if object.hit(r, t_min, closest_so_far, &mut tmp_rec) {
+                hit_anything = true;
+                *rec = tmp_rec.clone();
+                closest_so_far = tmp_rec.t;
             }
         }
         hit_anything
     }
-    fn bounding_box(&self,time0:f64,time1:f64,output_box:&mut super::aabb::AABB)->bool {
-        if self.objects.is_empty() {return false;}
-        let mut tmp_box=AABB::default();
-        let mut first_box=true;
+    fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut super::aabb::AABB) -> bool {
+        if self.objects.is_empty() {
+            return false;
+        }
+        let mut tmp_box = AABB::default();
+        let mut first_box = true;
 
-        for object in &self.objects{
-            if !object.bounding_box(time0, time1, &mut tmp_box){return false;}
-            *output_box= if first_box{tmp_box} else {AABB::surrounding_box(output_box.clone(), tmp_box)};
-            first_box=false;
+        for object in &self.objects {
+            if !object.bounding_box(time0, time1, &mut tmp_box) {
+                return false;
+            }
+            *output_box = if first_box {
+                tmp_box
+            } else {
+                AABB::surrounding_box(*output_box, tmp_box)
+            };
+            first_box = false;
         }
         true
     }

@@ -1,9 +1,12 @@
 use super::super::basic_tools;
 use super::super::material::metal::Material;
-use super::{hittable_origin::{HitRecord, Hittable},aabb::AABB};
+use super::{
+    aabb::AABB,
+    hittable_origin::{HitRecord, Hittable},
+};
 use basic_tools::{ray::Ray, vec3::Point, vec3::Vec3};
 use std::sync::Arc;
-#[derive(Clone,Default)]
+#[derive(Clone, Default)]
 pub struct MovingSphere {
     pub center0: Point,
     pub center1: Point,
@@ -32,7 +35,7 @@ impl MovingSphere {
 }
 
 impl Hittable for MovingSphere {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64,rec: &mut HitRecord) -> bool {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
         let oc: Vec3 = r.point - self.center(r.time);
         let a = r.direct.length_squared();
         let half_b = Vec3::dot(&oc, &r.direct);
@@ -61,10 +64,16 @@ impl Hittable for MovingSphere {
         true
     }
 
-    fn bounding_box(&self,time0:f64,time1:f64,output_box:&mut super::aabb::AABB)->bool {
-        let box0=AABB::new(self.center(time0)-Vec3::new(self.radius, self.radius, self.radius),self.center(time0)+Vec3::new(self.radius, self.radius, self.radius));
-        let box1=AABB::new(self.center(time1)-Vec3::new(self.radius, self.radius, self.radius),self.center(time1)+Vec3::new(self.radius, self.radius, self.radius));
-        *output_box=AABB::surrounding_box(box0, box1);
+    fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut super::aabb::AABB) -> bool {
+        let box0 = AABB::new(
+            self.center(time0) - Vec3::new(self.radius, self.radius, self.radius),
+            self.center(time0) + Vec3::new(self.radius, self.radius, self.radius),
+        );
+        let box1 = AABB::new(
+            self.center(time1) - Vec3::new(self.radius, self.radius, self.radius),
+            self.center(time1) + Vec3::new(self.radius, self.radius, self.radius),
+        );
+        *output_box = AABB::surrounding_box(box0, box1);
         true
     }
 }

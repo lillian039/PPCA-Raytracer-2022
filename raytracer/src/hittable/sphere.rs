@@ -5,7 +5,7 @@ use super::hittable_origin::{HitRecord, Hittable};
 use basic_tools::{ray::Ray, vec3::Point, vec3::Vec3};
 use std::sync::Arc;
 
-#[derive(Clone,Default)]
+#[derive(Clone, Default)]
 pub struct Sphere {
     pub center: Point,
     pub radius: f64,
@@ -17,13 +17,13 @@ impl Sphere {
         Self {
             center: (cen),
             radius: (r),
-            mat_ptr:Some(mat_ptr),
+            mat_ptr: Some(mat_ptr),
         }
     }
 }
 //whether hit the shpere t is the time
 impl Hittable for Sphere {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64,rec: &mut HitRecord) -> bool {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
         let oc: Vec3 = r.point - self.center;
         let a = r.direct.length_squared();
         let half_b = Vec3::dot(&oc, &r.direct);
@@ -52,8 +52,11 @@ impl Hittable for Sphere {
         true
     }
 
-    fn bounding_box(&self,time0:f64,time1:f64,output_box:&mut AABB)->bool {
-        *output_box=AABB::new(self.center-Vec3::new(self.radius, self.radius, self.radius), self.center+Vec3::new(self.radius, self.radius, self.radius));
+    fn bounding_box(&self, _time0: f64, _time1: f64, output_box: &mut AABB) -> bool {
+        *output_box = AABB::new(
+            self.center - Vec3::new(self.radius, self.radius, self.radius),
+            self.center + Vec3::new(self.radius, self.radius, self.radius),
+        );
         true
     }
 }

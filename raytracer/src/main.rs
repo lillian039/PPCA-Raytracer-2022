@@ -14,19 +14,22 @@ pub mod hittable;
 pub mod material;
 use basic_tools::{camera::Camera, ray::Ray, vec3::Color, vec3::Point, vec3::Vec3};
 use hittable::{
+    bvh::BVHNode,
     hittable_list::HittableList,
-    hittable_origin::{clamp, random_double, Hittable,HitRecord},
+    hittable_origin::{clamp, random_double, HitRecord, Hittable},
 };
 fn ray_color(r: &Ray, world: &dyn Hittable, depth: i32) -> Color {
     if depth <= 0 {
         return Color::new(0.0, 0.0, 0.0);
     }
-    let mut rec=HitRecord::default();
-    if  world.hit(r, 0.001, INFINITY,&mut rec) {
+    let mut rec = HitRecord::default();
+    if world.hit(r, 0.001, INFINITY, &mut rec) {
         let mut scattered = Ray::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 0.0), 0.0);
         let mut attenuation = Vec3::new(0.0, 0.0, 0.0);
         if rec
-            .mat_ptr.as_ref().unwrap()
+            .mat_ptr
+            .as_ref()
+            .unwrap()
             .scatter(r, &rec, &mut attenuation, &mut scattered)
         {
             return ray_color(&scattered, world, depth - 1) * attenuation;
@@ -42,10 +45,10 @@ fn main() {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char); // Set cursor position as 1,1
 
     let aspect_ratio = 16.0 / 9.0;
-    let height = 225;
+    let height = 900;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/book2_image1.jpg";
+    let path = "output/book2_image21.jpg";
     let samples_per_pixel = 100;
     let max_depth = 50;
     let lookfrom = Point::new(13.0, 2.0, 3.0);
@@ -66,6 +69,7 @@ fn main() {
     );
 
     let world = HittableList::random_scene();
+    let bvhworld = BVHNode::new(&world.objects, 0, world.objects.len() - 1, 0.0, 1.0);
 
     println!(
         "Image size: {}\nJPEG quality: {}",
@@ -79,7 +83,7 @@ fn main() {
     let multiprogress = Arc::new(MultiProgress::new());
     multiprogress.set_move_cursor(true);
 
-    let thread_total = 4;
+    let thread_total = 8;
     let mut threads = Vec::new();
     let mut output_pixel = Vec::new();
     let hight_line = height / thread_total;
@@ -91,7 +95,7 @@ fn main() {
             hight_end = height;
         }
 
-        let world_thread = world.clone();
+        let world_thread = bvhworld.clone();
         let camera_thread = camera;
 
         let mp = multiprogress.clone();
