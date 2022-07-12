@@ -31,7 +31,7 @@ impl Hittable for BVHNode {
 
 impl BVHNode {
     pub fn new(
-        src_objects: &Vec<Arc<dyn Hittable>>,
+        src_objects: Vec<Arc<dyn Hittable>>,
         start: usize,
         end: usize,
         time0: f64,
@@ -56,8 +56,14 @@ impl BVHNode {
         } else {
             objects[start..=end].sort_by(|a, b| box_compare(a, b, axis));
             let mid = start + object_span / 2;
-            tmp_left = Some(Arc::new(BVHNode::new(&objects, start, mid, time0, time1)));
-            tmp_right = Some(Arc::new(BVHNode::new(&objects, mid, end, time0, time1)));
+            tmp_left = Some(Arc::new(BVHNode::new(
+                objects.clone(),
+                start,
+                mid,
+                time0,
+                time1,
+            )));
+            tmp_right = Some(Arc::new(BVHNode::new(objects, mid, end, time0, time1)));
         }
         let mut box_left = AABB::default();
         let mut box_right = AABB::default();

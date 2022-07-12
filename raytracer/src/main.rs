@@ -48,7 +48,7 @@ fn main() {
     let height = 900;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/book2_image21.jpg";
+    let path = "output/book2_image1.jpg";
     let samples_per_pixel = 100;
     let max_depth = 50;
     let lookfrom = Point::new(13.0, 2.0, 3.0);
@@ -69,7 +69,7 @@ fn main() {
     );
 
     let world = HittableList::random_scene();
-    let bvhworld = BVHNode::new(&world.objects, 0, world.objects.len() - 1, 0.0, 1.0);
+    let bvhworld = BVHNode::new(world.objects.clone(), 0, world.objects.len() - 1, 0.0, 1.0);
 
     println!(
         "Image size: {}\nJPEG quality: {}",
