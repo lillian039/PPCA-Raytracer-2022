@@ -1,15 +1,15 @@
-use super::super::basic_tools;
+use super::{super::basic_tools, aabb::AABB};
 use super::super::material::metal::Material;
 use basic_tools::{ray::Ray, vec3::Point, vec3::Vec3};
 use rand::Rng;
 use std::sync::Arc;
-#[derive(Clone)]
+#[derive(Clone,Default)]
 pub struct HitRecord {
     pub p: Point,
     pub normal: Vec3,
     pub t: f64,
     pub front_face: bool,
-    pub mat_ptr: Arc<dyn Material>,
+    pub mat_ptr: Option<Arc<dyn Material>>,
 }
 
 impl HitRecord {
@@ -22,8 +22,11 @@ impl HitRecord {
         }
     }
 }
+
 pub trait Hittable: Send + Sync {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64,rec: &mut HitRecord)->bool;
+
+    fn bounding_box(&self,time0:f64,time1:f64,output_box:&mut AABB)->bool;
 }
 
 pub fn random_double() -> f64 {

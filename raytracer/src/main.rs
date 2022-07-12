@@ -15,17 +15,18 @@ pub mod material;
 use basic_tools::{camera::Camera, ray::Ray, vec3::Color, vec3::Point, vec3::Vec3};
 use hittable::{
     hittable_list::HittableList,
-    hittable_origin::{clamp, random_double, Hittable},
+    hittable_origin::{clamp, random_double, Hittable,HitRecord},
 };
 fn ray_color(r: &Ray, world: &dyn Hittable, depth: i32) -> Color {
     if depth <= 0 {
         return Color::new(0.0, 0.0, 0.0);
     }
-    if let Some(rec) = world.hit(r, 0.001, INFINITY) {
+    let mut rec=HitRecord::default();
+    if  world.hit(r, 0.001, INFINITY,&mut rec) {
         let mut scattered = Ray::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 0.0), 0.0);
         let mut attenuation = Vec3::new(0.0, 0.0, 0.0);
         if rec
-            .mat_ptr
+            .mat_ptr.as_ref().unwrap()
             .scatter(r, &rec, &mut attenuation, &mut scattered)
         {
             return ray_color(&scattered, world, depth - 1) * attenuation;

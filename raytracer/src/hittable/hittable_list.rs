@@ -1,4 +1,5 @@
 use super::super::material::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal};
+use super::aabb::AABB;
 use super::{
     super::basic_tools::{
         ray::Ray,
@@ -12,6 +13,7 @@ use super::{
     sphere::Sphere,
 };
 use std::sync::Arc;
+
 #[derive(Clone, Default)]
 pub struct HittableList {
     pub objects: Vec<Arc<dyn Hittable>>,
@@ -99,17 +101,30 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
-        let mut rec: Option<HitRecord> = None;
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64,rec: &mut HitRecord) -> bool {
+        let mut tmp_rec=HitRecord::default();
         let mut closest_so_far = t_max;
+        let mut hit_anything=false;
 
         for object in &self.objects {
-            if let Some(temp_rec) = object.hit(r, t_min, closest_so_far) {
-                closest_so_far = temp_rec.t;
-                rec = Some(temp_rec);
-                // rec.clone_from(&temp_rec);
+            if object.hit(r, t_min, closest_so_far,&mut tmp_rec) {
+                hit_anything=true;
+               *rec = tmp_rec.clone();
+               closest_so_far = tmp_rec.t;
             }
         }
-        rec
+        hit_anything
+    }
+    fn bounding_box(&self,time0:f64,time1:f64,output_box:&mut super::aabb::AABB)->bool {
+        if self.objects.is_empty() {return false;}
+        let mut tmp_box=AABB::default();
+        let mut first_box=true;
+
+        for object in &self.objects{
+            if !object.bounding_box(time0, time1, &mut tmp_box){return false;}
+            *output_box= if first_box{tmp_box} else {AABB::surrounding_box(output_box.clone(), tmp_box)};
+            first_box=false;
+        }
+        true
     }
 }
