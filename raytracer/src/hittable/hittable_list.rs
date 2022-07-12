@@ -12,6 +12,7 @@ use super::{
     moving_sphere::MovingSphere,
     sphere::Sphere,
 };
+use crate::texture::text::CheckerTexture;
 use std::sync::Arc;
 
 #[derive(Clone, Default)]
@@ -36,7 +37,11 @@ impl HittableList {
 
     pub fn random_scene() -> HittableList {
         let mut world = HittableList::default();
-        let ground_material = Arc::new(Lambertian::new(0.5, 0.5, 0.5));
+        let checker = Arc::new(CheckerTexture::new_col(
+            &Color::new(0.2, 0.3, 0.1),
+            &Color::new(0.9, 0.9, 0.9),
+        ));
+        let ground_material = Arc::new(Lambertian::newp(checker));
         world.add(Arc::new(Sphere::new(
             Point::new(0.0, -1000.0, 0.0),
             1000.0,
@@ -55,8 +60,8 @@ impl HittableList {
                 if (center - Point::new(4.0, 0.2, 0.0)).length() > 0.9 {
                     if choose_mat < 0.8 {
                         let albedo = Color::random() * Color::random();
-                        let sphere_material =
-                            Arc::new(Lambertian::new(albedo.x, albedo.y, albedo.z));
+                        let sphere_material = Arc::new(Lambertian::new(albedo));
+                        /* world.add(Arc::new(Sphere::new(center, 0.2, sphere_material))); */
                         let center2 = center + Vec3::new(0.0, random_t(0.0, 0.5), 0.0);
                         world.add(Arc::new(MovingSphere::new(
                             center,
@@ -65,7 +70,7 @@ impl HittableList {
                             1.0,
                             0.2,
                             sphere_material,
-                        )));
+                        )))
                     } else if choose_mat < 0.95 {
                         let albedo = Color::random_range(0.5, 1.0);
                         let fuzz = random_t(0.0, 0.5);
@@ -84,7 +89,7 @@ impl HittableList {
             1.0,
             material_1,
         )));
-        let material_2 = Arc::new(Lambertian::new(0.4, 0.2, 0.1));
+        let material_2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
         world.add(Arc::new(Sphere::new(
             Point::new(-4.0, 1.0, 0.0),
             1.0,

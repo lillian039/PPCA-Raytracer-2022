@@ -3,6 +3,7 @@ use super::super::material::metal::Material;
 use super::aabb::AABB;
 use super::hittable_origin::{HitRecord, Hittable};
 use basic_tools::{ray::Ray, vec3::Point, vec3::Vec3};
+use std::f64::consts::PI;
 use std::sync::Arc;
 
 #[derive(Clone, Default)]
@@ -19,6 +20,12 @@ impl Sphere {
             radius: (r),
             mat_ptr: Some(mat_ptr),
         }
+    }
+    pub fn get_sphere_uv(p: &Point, u: &mut f64, v: &mut f64) {
+        let theta = (-p.y).acos();
+        let phi = f64::atan2(-p.z, p.x) + PI;
+        *u = phi / (2.0 * PI);
+        *v = theta / PI;
     }
 }
 //whether hit the shpere t is the time
@@ -44,11 +51,14 @@ impl Hittable for Sphere {
             p: r.at(root),
             normal: Vec3::default(),
             t: root,
+            u: 0.0,
+            v: 0.0,
             front_face: bool::default(),
             mat_ptr: self.mat_ptr.clone(),
         };
         let outward_normal = (rec.p - self.center) / self.radius;
         rec.set_face_normal(r, &outward_normal);
+        Sphere::get_sphere_uv(&outward_normal, &mut rec.u, &mut rec.v);
         true
     }
 

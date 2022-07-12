@@ -8,6 +8,8 @@ pub struct HitRecord {
     pub p: Point,
     pub normal: Vec3,
     pub t: f64,
+    pub u: f64,
+    pub v: f64,
     pub front_face: bool,
     pub mat_ptr: Option<Arc<dyn Material>>,
 }

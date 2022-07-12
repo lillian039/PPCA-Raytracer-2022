@@ -12,6 +12,7 @@ use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 pub mod basic_tools;
 pub mod hittable;
 pub mod material;
+pub mod texture;
 use basic_tools::{camera::Camera, ray::Ray, vec3::Color, vec3::Point, vec3::Vec3};
 use hittable::{
     bvh::BVHNode,
@@ -48,7 +49,7 @@ fn main() {
     let height = 900;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/book2_image1.jpg";
+    let path = "output/book2_image2.jpg";
     let samples_per_pixel = 100;
     let max_depth = 50;
     let lookfrom = Point::new(13.0, 2.0, 3.0);

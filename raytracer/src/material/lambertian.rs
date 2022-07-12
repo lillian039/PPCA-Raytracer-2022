@@ -1,3 +1,7 @@
+use std::sync::Arc;
+
+use crate::texture::text::{SolidColor, Texture};
+
 use super::super::basic_tools::{
     ray::Ray,
     vec3::{Color, Vec3},
@@ -6,7 +10,7 @@ use super::super::hittable::hittable_origin::HitRecord;
 use super::metal::Material;
 
 pub struct Lambertian {
-    pub albedo: Color, //反射率
+    pub albedo: Option<Arc<dyn Texture>>, //反射率
 }
 
 impl Material for Lambertian {
@@ -22,15 +26,18 @@ impl Material for Lambertian {
             scatter_direction = rec.normal;
         }
         *scattered = Ray::new(rec.p, scatter_direction, r_in.time);
-        *attenuation = self.albedo;
+        *attenuation = self.albedo.as_ref().unwrap().value(rec.u, rec.v, &rec.p);
         true
     }
 }
 
 impl Lambertian {
-    pub fn new(x: f64, y: f64, z: f64) -> Self {
+    pub fn new(a: Color) -> Self {
         Self {
-            albedo: Color::new(x, y, z),
+            albedo: Some(Arc::new(SolidColor::new(&a))),
         }
+    }
+    pub fn newp(a: Arc<dyn Texture>) -> Self {
+        Self { albedo: (Some(a)) }
     }
 }

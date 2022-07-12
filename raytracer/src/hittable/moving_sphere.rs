@@ -56,6 +56,8 @@ impl Hittable for MovingSphere {
             p: r.at(root),
             normal: Vec3::default(),
             t: root,
+            u: 0.0,
+            v: 0.0,
             front_face: bool::default(),
             mat_ptr: self.mat_ptr.clone(),
         };
