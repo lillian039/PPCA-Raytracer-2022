@@ -126,7 +126,7 @@ impl HittableList {
 
     pub fn two_perlin_sphere() -> HittableList {
         let mut objects = HittableList::default();
-        let pertext = Arc::new(NoiseTexture::new());
+        let pertext = Arc::new(NoiseTexture::new(4.0));
         let permater = Arc::new(Lambertian::newp(pertext));
         objects.add(Arc::new(Sphere::new(
             Point::new(0.0, -1000.0, 0.0),

@@ -62,17 +62,20 @@ impl Texture for CheckerTexture {
 #[derive(Clone, Default)]
 pub struct NoiseTexture {
     pub noise: Perlin,
+    pub scale: f64,
 }
 
 impl NoiseTexture {
-    pub fn new() -> Self {
+    pub fn new(sc: f64) -> Self {
         Self {
             noise: (Perlin::new()),
+            scale: sc,
         }
     }
 }
 impl Texture for NoiseTexture {
     fn value(&self, _u: f64, _v: f64, p: &Point) -> Color {
-        Color::new(1.0, 1.0, 1.0) * self.noise.noise(p)
+        let p2 = *p * self.scale;
+        Color::new(1.0, 1.0, 1.0) * self.noise.noise_smooth(&p2)
     }
 }

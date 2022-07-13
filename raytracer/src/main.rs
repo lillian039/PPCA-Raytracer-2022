@@ -49,7 +49,7 @@ fn main() {
     let height = 900;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/book2_image7.jpg";
+    let path = "output/book2_image10.jpg";
     let samples_per_pixel = 100;
     let max_depth = 50;
     let camera = Camera::new_two_sphere();
