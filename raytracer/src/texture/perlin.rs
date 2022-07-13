@@ -1,7 +1,7 @@
 use std::vec;
 
 use crate::basic_tools::vec3::{Point, Vec3};
-use crate::hittable::hittable_origin::{random_double, random_int};
+use crate::hittable::hittable_origin::random_int;
 
 #[derive(Clone, Default)]
 pub struct Perlin {
@@ -84,10 +84,10 @@ impl Perlin {
 
     pub fn turb(&self, p: &Point, depth: i32) -> f64 {
         let mut accum = 0.0;
-        let mut temp_p = p.clone();
+        let mut temp_p = *p;
         let mut wight = 1.0;
 
-        for i in 0..depth {
+        for _i in 0..depth {
             accum += wight * self.noise(&temp_p);
             wight *= 0.5;
             temp_p *= 2.0;
