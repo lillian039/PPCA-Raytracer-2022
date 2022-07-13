@@ -23,7 +23,7 @@ impl Sphere {
     }
     pub fn get_sphere_uv(p: &Point, u: &mut f64, v: &mut f64) {
         let theta = (-p.y).acos();
-        let phi = f64::atan2(-p.z, p.x) + PI;
+        let phi = (-p.z).atan2(p.x) + PI;
         *u = phi / (2.0 * PI);
         *v = theta / PI;
     }
@@ -51,8 +51,8 @@ impl Hittable for Sphere {
             p: r.at(root),
             normal: Vec3::default(),
             t: root,
-            u: 0.0,
-            v: 0.0,
+            u: 1.0,
+            v: 1.0,
             front_face: bool::default(),
             mat_ptr: self.mat_ptr.clone(),
         };

@@ -12,7 +12,7 @@ use super::{
     moving_sphere::MovingSphere,
     sphere::Sphere,
 };
-use crate::texture::text::CheckerTexture;
+use crate::texture::text::{CheckerTexture, NoiseTexture};
 use std::sync::Arc;
 
 #[derive(Clone, Default)]
@@ -120,6 +120,23 @@ impl HittableList {
             Point::new(0.0, 10.0, 0.0),
             10.0,
             sphere_material,
+        )));
+        objects
+    }
+
+    pub fn two_perlin_sphere() -> HittableList {
+        let mut objects = HittableList::default();
+        let pertext = Arc::new(NoiseTexture::new());
+        let permater = Arc::new(Lambertian::newp(pertext));
+        objects.add(Arc::new(Sphere::new(
+            Point::new(0.0, -1000.0, 0.0),
+            1000.0,
+            permater.clone(),
+        )));
+        objects.add(Arc::new(Sphere::new(
+            Point::new(0.0, 2.0, 0.0),
+            2.0,
+            permater,
         )));
         objects
     }
