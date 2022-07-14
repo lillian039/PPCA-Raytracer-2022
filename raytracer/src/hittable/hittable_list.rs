@@ -13,7 +13,7 @@ use super::{
     hittable_origin::{random_double, HitRecord, Hittable},
     moving_sphere::MovingSphere,
     sphere::Sphere,
-    xy_rectangle::{XYRectangle, XZRectangle, YZRectangle},
+    xy_rectangle::{Cube, XYRectangle, XZRectangle, YZRectangle},
 };
 
 use crate::texture::text::{CheckerTexture, ImageTexture, NoiseTexture};
@@ -215,7 +215,22 @@ impl HittableList {
             white.clone(),
         )));
         objects.add(Arc::new(XYRectangle::new(
-            0.0, 555.0, 0.0, 555.0, 555.0, white,
+            0.0,
+            555.0,
+            0.0,
+            555.0,
+            555.0,
+            white.clone(),
+        )));
+        objects.add(Arc::new(Cube::new(
+            Point::new(130.0, 0.0, 65.0),
+            Point::new(295.0, 165.0, 230.0),
+            white.clone(),
+        )));
+        objects.add(Arc::new(Cube::new(
+            Point::new(265.0, 0.0, 295.0),
+            Point::new(430.0, 330.0, 460.0),
+            white,
         )));
 
         objects

@@ -1,6 +1,7 @@
 use super::super::basic_tools;
 use super::super::material::metal::Material;
 use super::aabb::AABB;
+use super::hittable_list::HittableList;
 use super::hittable_origin::{HitRecord, Hittable};
 use basic_tools::{ray::Ray, vec3::Point, vec3::Vec3};
 use std::sync::Arc;
@@ -158,5 +159,82 @@ impl Hittable for YZRectangle {
         rec.mat_ptr = self.mp.clone();
         rec.p = r.at(t);
         true
+    }
+}
+
+#[derive(Clone, Default)]
+pub struct Cube {
+    pub box_min: Point,
+    pub box_max: Point,
+    pub slides: HittableList,
+}
+
+impl Cube {
+    pub fn new(p0: Point, p1: Point, ptr: Arc<dyn Material>) -> Self {
+        let mut slide = HittableList::default();
+        slide.add(Arc::new(XYRectangle::new(
+            p0.x,
+            p1.x,
+            p0.y,
+            p1.y,
+            p1.z,
+            ptr.clone(),
+        )));
+        slide.add(Arc::new(XYRectangle::new(
+            p0.x,
+            p1.x,
+            p0.y,
+            p1.y,
+            p0.z,
+            ptr.clone(),
+        )));
+        slide.add(Arc::new(XZRectangle::new(
+            p0.x,
+            p1.x,
+            p0.z,
+            p1.z,
+            p1.y,
+            ptr.clone(),
+        )));
+        slide.add(Arc::new(XZRectangle::new(
+            p0.x,
+            p1.x,
+            p0.z,
+            p1.z,
+            p0.y,
+            ptr.clone(),
+        )));
+        slide.add(Arc::new(YZRectangle::new(
+            p0.y,
+            p1.y,
+            p0.z,
+            p1.z,
+            p1.x,
+            ptr.clone(),
+        )));
+        slide.add(Arc::new(YZRectangle::new(
+            p0.y,
+            p1.y,
+            p0.z,
+            p1.z,
+            p0.x,
+            ptr.clone(),
+        )));
+        Self {
+            box_min: (p0),
+            box_max: (p1),
+            slides: (slide),
+        }
+    }
+}
+
+impl Hittable for Cube {
+    fn bounding_box(&self, _time0: f64, _time1: f64, output_box: &mut AABB) -> bool {
+        *output_box = AABB::new(self.box_min, self.box_max);
+        true
+    }
+
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+        self.slides.hit(r, t_min, t_max, rec)
     }
 }
