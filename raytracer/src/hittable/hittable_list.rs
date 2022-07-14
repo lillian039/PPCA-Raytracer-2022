@@ -13,7 +13,7 @@ use super::{
     hittable_origin::{random_double, HitRecord, Hittable},
     moving_sphere::MovingSphere,
     sphere::Sphere,
-    xy_rectangle::XYRectangle,
+    xy_rectangle::{XYRectangle, XZRectangle, YZRectangle},
 };
 
 use crate::texture::text::{CheckerTexture, ImageTexture, NoiseTexture};
@@ -164,14 +164,58 @@ impl HittableList {
             1000.0,
             mat.clone(),
         )));
-        objects.add(Arc::new(Sphere::new(
-            Point::new(0.0, 2.0, 0.0),
-            2.0,
-            mat,
-        )));
+        objects.add(Arc::new(Sphere::new(Point::new(0.0, 2.0, 0.0), 2.0, mat)));
         let difflight = Arc::new(DiffuseLight::new_col(Color::new(4.0, 4.0, 4.0)));
         objects.add(Arc::new(XYRectangle::new(
-            3.0, 5.0, 1.0, 3.0, -2.0, difflight,
+            3.0,
+            5.0,
+            1.0,
+            3.0,
+            -2.0,
+            difflight.clone(),
+        )));
+        objects.add(Arc::new(Sphere::new(
+            Point::new(0.0, 7.0, 0.0),
+            2.0,
+            difflight,
+        )));
+
+        objects
+    }
+
+    pub fn cornell_box() -> HittableList {
+        let mut objects = HittableList::default();
+
+        let red = Arc::new(Lambertian::new(Color::new(0.65, 0.05, 0.05)));
+        let white = Arc::new(Lambertian::new(Color::new(0.73, 0.73, 0.73)));
+        let green = Arc::new(Lambertian::new(Color::new(0.12, 0.45, 0.15)));
+        let light = Arc::new(DiffuseLight::new_col(Color::new(15.0, 15.0, 15.0)));
+
+        objects.add(Arc::new(YZRectangle::new(
+            0.0, 555.0, 0.0, 555.0, 555.0, green,
+        )));
+        objects.add(Arc::new(YZRectangle::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
+        objects.add(Arc::new(XZRectangle::new(
+            213.0, 343.0, 227.0, 332.0, 554.0, light,
+        )));
+        objects.add(Arc::new(XZRectangle::new(
+            0.0,
+            555.0,
+            0.0,
+            555.0,
+            0.0,
+            white.clone(),
+        )));
+        objects.add(Arc::new(XZRectangle::new(
+            0.0,
+            555.0,
+            0.0,
+            555.0,
+            555.0,
+            white.clone(),
+        )));
+        objects.add(Arc::new(XYRectangle::new(
+            0.0, 555.0, 0.0, 555.0, 555.0, white,
         )));
 
         objects

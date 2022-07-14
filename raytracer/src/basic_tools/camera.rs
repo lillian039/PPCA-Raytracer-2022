@@ -83,7 +83,25 @@ impl Camera {
             1.0,
         )
     }
-
+    pub fn cornell_box() -> Self {
+        let aspect_ratio = 1.0;
+        let lookfrom = Point::new(278.0, 278.0, -800.0);
+        let lookat = Point::new(278.0, 278.0, 0.0);
+        let vup = Vec3::new(0.0, 1.0, 0.0);
+        let dist_to_focus = 10.0;
+        let aperture = 0.0;
+        Camera::new(
+            lookfrom,
+            lookat,
+            vup,
+            40.0,
+            aspect_ratio,
+            aperture,
+            dist_to_focus,
+            0.0,
+            1.0,
+        )
+    }
     pub fn new_random_scence() -> Self {
         let aspect_ratio = 16.0 / 9.0;
         let lookfrom = Point::new(13.0, 2.0, 3.0);
