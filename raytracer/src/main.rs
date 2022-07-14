@@ -49,12 +49,12 @@ fn main() {
     let height = 900;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/book2_image13.jpg";
+    let path = "output/book2_image15.jpg";
     let samples_per_pixel = 100;
     let max_depth = 50;
     let camera = Camera::new_two_sphere();
 
-    let world = HittableList::two_perlin_sphere();
+    let world = HittableList::earth();
 
     let bvhworld = BVHNode::new(world.objects.clone(), 0, world.objects.len(), 0.0, 1.0);
 

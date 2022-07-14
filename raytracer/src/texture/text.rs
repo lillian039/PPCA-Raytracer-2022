@@ -1,6 +1,7 @@
 use super::perlin::Perlin;
 use crate::basic_tools::vec3::{Color, Point};
-use std::sync::Arc;
+use image::GenericImageView;
+use std::{path::Path, sync::Arc};
 
 pub trait Texture: Send + Sync {
     fn value(&self, u: f64, v: f64, p: &Point) -> Color;
@@ -79,5 +80,72 @@ impl Texture for NoiseTexture {
         Color::new(1.0, 1.0, 1.0)
             * 0.5
             * (1.0 + (self.scale * p.z + 10.0 * self.noise.turb(p, 7)).sin())
+    }
+}
+
+#[derive(Clone, Default)]
+pub struct ImageTexture {
+    pub data: Vec<[u8; 3]>,
+    pub width: u32,
+    pub height: u32,
+    pub bytes_per_scanline: i32,
+}
+
+impl ImageTexture {
+    pub fn new(filename: &String) -> Self {
+        let pathname = String::from("img/") + filename;
+        //  println!("{}", &pathname.clone());
+        let path = Path::new(&pathname);
+        let image = image::open(path).unwrap();
+
+        println!("find picture!");
+
+        let width = image.width();
+        let height = image.height();
+        println!("width:{}", width);
+        println!("hight:{}", height);
+
+        let mut dat = Vec::new();
+        for i in (0..height).rev() {
+            for j in 0..width {
+                let pixel = image.get_pixel(j, i);
+                let tmp = [pixel[0], pixel[1], pixel[2]];
+                //   println!("r:{} g:{} b:{} ", pixel[0], pixel[1], pixel[2]);
+                dat.push(tmp);
+            }
+        }
+        Self {
+            data: (dat),
+            width: (width),
+            height: (height),
+            bytes_per_scanline: (width as i32),
+        }
+    }
+}
+
+impl Texture for ImageTexture {
+    fn value(&self, u: f64, v: f64, _p: &Point) -> Color {
+        if self.data.is_empty() {
+            return Color::new(0.0, 1.0, 1.0);
+        }
+
+        let mut i = (u * self.width as f64) as i32;
+        let mut j = (v * self.height as f64) as i32;
+
+        if i >= self.width as i32 {
+            i = self.width as i32 - 1;
+        }
+        if j >= self.height as i32 {
+            j = self.height as i32 - 1;
+        }
+
+        let color_scale = 1.0 / 255.0;
+        let pixel = (j * self.bytes_per_scanline + i) as usize;
+
+        Color::new(
+            color_scale * self.data[pixel][0] as f64,
+            color_scale * self.data[pixel][1] as f64,
+            color_scale * self.data[pixel][2] as f64,
+        )
     }
 }

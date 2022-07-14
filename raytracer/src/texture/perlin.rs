@@ -31,8 +31,8 @@ impl Perlin {
             p.push(i);
         }
         for i in (1..255).rev() {
-            let target = random_int(0, i as i32);
-            p.swap(i, target as usize);
+            let target = random_int(0, (i - 1) as i32);
+            p.swap(i as usize, target as usize);
         }
         p
     }

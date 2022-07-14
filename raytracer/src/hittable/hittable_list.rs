@@ -12,7 +12,7 @@ use super::{
     moving_sphere::MovingSphere,
     sphere::Sphere,
 };
-use crate::texture::text::{CheckerTexture, NoiseTexture};
+use crate::texture::text::{CheckerTexture, ImageTexture, NoiseTexture};
 use std::sync::Arc;
 
 #[derive(Clone, Default)]
@@ -139,6 +139,16 @@ impl HittableList {
             permater,
         )));
         objects
+    }
+
+    pub fn earth() -> HittableList {
+        let earth_texture = Arc::new(ImageTexture::new(&String::from("earthmap.jpg")));
+        let earth_surface = Arc::new(Lambertian::newp(earth_texture));
+        let globe = Arc::new(Sphere::new(Point::new(0.0, 0.0, 0.0), 2.0, earth_surface));
+
+        let mut world = HittableList::default();
+        world.add(globe);
+        world
     }
 }
 
