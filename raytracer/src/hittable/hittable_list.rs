@@ -1,4 +1,6 @@
-use super::super::material::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal};
+use super::super::material::{
+    dielectric::Dielectric, diffuse_light::DiffuseLight, lambertian::Lambertian, metal::Metal,
+};
 use super::aabb::AABB;
 use super::{
     super::basic_tools::{
@@ -11,7 +13,9 @@ use super::{
     hittable_origin::{random_double, HitRecord, Hittable},
     moving_sphere::MovingSphere,
     sphere::Sphere,
+    xy_rectangle::XYRectangle,
 };
+
 use crate::texture::text::{CheckerTexture, ImageTexture, NoiseTexture};
 use std::sync::Arc;
 
@@ -142,13 +146,35 @@ impl HittableList {
     }
 
     pub fn earth() -> HittableList {
-        let earth_texture = Arc::new(ImageTexture::new(&String::from("earthmap.jpg")));
+        let earth_texture = Arc::new(ImageTexture::new(&String::from("mercury.jpg")));
         let earth_surface = Arc::new(Lambertian::newp(earth_texture));
         let globe = Arc::new(Sphere::new(Point::new(0.0, 0.0, 0.0), 2.0, earth_surface));
 
         let mut world = HittableList::default();
         world.add(globe);
         world
+    }
+
+    pub fn simple_light() -> HittableList {
+        let mut objects = HittableList::default();
+        let pertext = Arc::new(NoiseTexture::new(4.0));
+        let mat = Arc::new(Lambertian::newp(pertext));
+        objects.add(Arc::new(Sphere::new(
+            Point::new(0.0, -1000.0, 0.0),
+            1000.0,
+            mat.clone(),
+        )));
+        objects.add(Arc::new(Sphere::new(
+            Point::new(0.0, 2.0, 0.0),
+            2.0,
+            mat,
+        )));
+        let difflight = Arc::new(DiffuseLight::new_col(Color::new(4.0, 4.0, 4.0)));
+        objects.add(Arc::new(XYRectangle::new(
+            3.0, 5.0, 1.0, 3.0, -2.0, difflight,
+        )));
+
+        objects
     }
 }
 

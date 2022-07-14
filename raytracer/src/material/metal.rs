@@ -1,6 +1,6 @@
 use super::super::basic_tools::{
     ray::Ray,
-    vec3::{Color, Vec3},
+    vec3::{Color, Point, Vec3},
 };
 use super::super::hittable::hittable_origin::HitRecord;
 pub trait Material: Send + Sync {
@@ -11,6 +11,10 @@ pub trait Material: Send + Sync {
         attenuation: &mut Color,
         scattered: &mut Ray,
     ) -> bool;
+
+    fn emit(&self, _u: f64, _v: f64, _p: &Point) -> Color {
+        Color::new(0.0, 0.0, 0.0)
+    }
 }
 
 pub struct Metal {

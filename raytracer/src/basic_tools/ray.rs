@@ -1,4 +1,5 @@
 use super::vec3::Vec3;
+#[derive(Default)]
 pub struct Ray {
     pub point: Vec3,
     pub direct: Vec3,

@@ -19,27 +19,26 @@ use hittable::{
     hittable_list::HittableList,
     hittable_origin::{clamp, random_double, HitRecord, Hittable},
 };
-fn ray_color(r: &Ray, world: &dyn Hittable, depth: i32) -> Color {
+fn ray_color(r: &Ray, background: Color, world: &dyn Hittable, depth: i32) -> Color {
     if depth <= 0 {
         return Color::new(0.0, 0.0, 0.0);
     }
     let mut rec = HitRecord::default();
-    if world.hit(r, 0.001, INFINITY, &mut rec) {
-        let mut scattered = Ray::new(Vec3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 0.0), 0.0);
-        let mut attenuation = Vec3::new(0.0, 0.0, 0.0);
-        if rec
-            .mat_ptr
-            .as_ref()
-            .unwrap()
-            .scatter(r, &rec, &mut attenuation, &mut scattered)
-        {
-            return ray_color(&scattered, world, depth - 1) * attenuation;
-        }
-        return Color::new(0.0, 0.0, 0.0);
+    if !world.hit(r, 0.001, INFINITY, &mut rec) {
+        return background;
     }
-    let unit_direction = Vec3::unit_vector(r.direct);
-    let t = (unit_direction.y + 1.0) * 0.5;
-    Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t
+    let mut scattered = Ray::default();
+    let mut attenuation = Vec3::default();
+    let emitted = rec.mat_ptr.as_ref().unwrap().emit(rec.u, rec.v, &rec.p);
+    if !rec
+        .mat_ptr
+        .as_ref()
+        .unwrap()
+        .scatter(r, &rec, &mut attenuation, &mut scattered)
+    {
+        return emitted;
+    }
+    emitted + ray_color(&scattered, background, world, depth - 1) * attenuation
 }
 fn main() {
     print!("{}[2J", 27 as char); // Clear screen 27 as char --> esc
@@ -49,12 +48,12 @@ fn main() {
     let height = 900;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/book2_image15.jpg";
+    let path = "output/book2_image16.jpg";
     let samples_per_pixel = 100;
     let max_depth = 50;
-    let camera = Camera::new_two_sphere();
+    let camera = Camera::simple_light();
 
-    let world = HittableList::earth();
+    let world = HittableList::simple_light();
 
     let bvhworld = BVHNode::new(world.objects.clone(), 0, world.objects.len(), 0.0, 1.0);
 
@@ -84,6 +83,8 @@ fn main() {
 
         let world_thread = bvhworld.clone();
         let camera_thread = camera;
+        //let background_color = Color::new(0.7, 0.8, 1.0);
+        let background_color = Color::new(0.0, 0.0, 0.0);
 
         let mp = multiprogress.clone();
         let progress_bar = mp.add(ProgressBar::new(((hight_end - hight_begin) * width) as u64));
@@ -108,7 +109,7 @@ fn main() {
                             let u = (x as f64 + random_double()) / (width as f64);
                             let v = (y as f64 + random_double()) / (height as f64);
                             let r = camera_thread.get_ray(u, v);
-                            col += ray_color(&r, &world_thread, max_depth);
+                            col += ray_color(&r, background_color, &world_thread, max_depth);
                         }
                         col = col / samples_per_pixel as f64;
                         let pixel_color = [
