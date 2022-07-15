@@ -49,7 +49,7 @@ fn main() {
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
     let path = "output/book2_image22.jpg";
-    let samples_per_pixel = 2000;
+    let samples_per_pixel = 10000;
     let max_depth = 50;
     let camera = Camera::final_scence();
 
