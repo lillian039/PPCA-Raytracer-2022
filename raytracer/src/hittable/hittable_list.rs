@@ -1,17 +1,15 @@
+use super::super::basic_tools::{
+    ray::Ray,
+    vec3::{Color, Point, Vec3},
+};
 use super::super::material::{
     dielectric::Dielectric, diffuse_light::DiffuseLight, lambertian::Lambertian, metal::Metal,
 };
 use super::aabb::AABB;
 use super::{
-    super::basic_tools::{
-        ray::Ray,
-        vec3::{Color, Point, Vec3},
-    },
-    hittable_origin::random_t,
-};
-use super::{
+    bvh::BVHNode,
     fog::ConstantMedium,
-    hittable_origin::{random_double, HitRecord, Hittable},
+    hittable_origin::{random_double, random_t, HitRecord, Hittable},
     moving_sphere::MovingSphere,
     sphere::Sphere,
     xy_rectangle::{Cube, RotateY, Translate, XYRectangle, XZRectangle, YZRectangle},
@@ -314,6 +312,132 @@ impl HittableList {
             Color::new(1.0, 1.0, 1.0),
         ));
         objects.add(box2);
+
+        objects
+    }
+
+    pub fn final_scence() -> HittableList {
+        let mut boxes1 = HittableList::default();
+        let ground = Arc::new(Lambertian::new(Color::new(0.48, 0.83, 0.53)));
+
+        let boxes_per_side = 20;
+        for i in 0..boxes_per_side {
+            for j in 0..boxes_per_side {
+                let w = 100.0;
+                let x0 = -1000.0 + i as f64 * w;
+                let z0 = -1000.0 + j as f64 * w;
+                let y0 = 0.0;
+                let x1 = x0 + w;
+                let y1 = random_t(1.0, 101.0);
+                let z1 = z0 + w;
+
+                boxes1.add(Arc::new(Cube::new(
+                    Point::new(x0, y0, z0),
+                    Point::new(x1, y1, z1),
+                    ground.clone(),
+                )));
+            }
+        }
+
+        let mut objects = HittableList::default();
+        objects.add(Arc::new(BVHNode::new(
+            boxes1.objects.clone(),
+            0,
+            boxes1.objects.len(),
+            0.0,
+            1.0,
+        )));
+
+        let light = Arc::new(DiffuseLight::new_col(Color::new(7.0, 7.0, 7.0)));
+        objects.add(Arc::new(XZRectangle::new(
+            123.0, 423.0, 147.0, 412.0, 554.0, light,
+        )));
+
+        //=== moving sphere ====
+        let center1 = Point::new(400.0, 400.0, 200.0);
+        let center2 = center1 + Vec3::new(30.0, 0.0, 0.0);
+        let moving_sphere_material = Arc::new(Lambertian::new(Color::new(0.7, 0.3, 0.1)));
+        objects.add(Arc::new(MovingSphere::new(
+            center1,
+            center2,
+            0.0,
+            1.0,
+            50.0,
+            moving_sphere_material,
+        )));
+
+        //=== metal and glass ===
+        let glass_mat = Arc::new(Dielectric::new(1.5));
+        let metal_mat = Arc::new(Metal::new(Color::new(0.8, 0.8, 0.9), 1.0));
+        objects.add(Arc::new(Sphere::new(
+            Point::new(260.0, 150.0, 45.0),
+            50.0,
+            glass_mat.clone(),
+        )));
+        objects.add(Arc::new(Sphere::new(
+            Point::new(0.0, 150.0, 145.0),
+            50.0,
+            metal_mat,
+        )));
+
+        //=== smoke ===
+        let boundary = Arc::new(Sphere::new(
+            Point::new(360.0, 150.0, 45.0),
+            70.0,
+            glass_mat.clone(),
+        ));
+        objects.add(boundary.clone());
+        let smoke_ball = Arc::new(ConstantMedium::new_col(
+            boundary,
+            0.2,
+            Color::new(0.2, 0.4, 0.9),
+        ));
+        objects.add(smoke_ball);
+        let boundary = Arc::new(Sphere::new(Point::new(0.0, 0.0, 0.0), 5000.0, glass_mat));
+        let smoke_ball = Arc::new(ConstantMedium::new_col(
+            boundary,
+            0.0001,
+            Color::new(1.0, 1.0, 1.0),
+        ));
+        objects.add(smoke_ball);
+
+        //=== earth ===
+        let emat = Arc::new(Lambertian::newp(Arc::new(ImageTexture::new(
+            &String::from("earthmap.jpg"),
+        ))));
+        let earth = Arc::new(Sphere::new(Point::new(400.0, 200.0, 400.0), 100.0, emat));
+        objects.add(earth);
+
+        //=== noise box ===
+        let pertext = Arc::new(NoiseTexture::new(0.1));
+        let perball = Arc::new(Sphere::new(
+            Point::new(220.0, 280.0, 300.0),
+            80.0,
+            Arc::new(Lambertian::newp(pertext)),
+        ));
+        objects.add(perball);
+
+        //=== boxes contain many boxes
+        let mut boxes2 = HittableList::default();
+        let white = Arc::new(Lambertian::new(Color::new(0.73, 0.73, 0.73)));
+        let ns = 1000;
+        for _j in 0..ns {
+            boxes2.add(Arc::new(Sphere::new(
+                Point::random_range(0.0, 165.0),
+                10.0,
+                white.clone(),
+            )));
+        }
+        let many_balls = Arc::new(BVHNode::new(
+            boxes2.objects.clone(),
+            0,
+            boxes2.objects.len(),
+            0.0,
+            1.0,
+        ));
+        let many_balls = Arc::new(RotateY::new(many_balls, 15.0));
+        let many_balls = Arc::new(Translate::new(many_balls, Vec3::new(-100.0, 270.0, 395.0)));
+        objects.add(many_balls);
 
         objects
     }
