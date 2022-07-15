@@ -10,6 +10,7 @@ use super::{
     hittable_origin::random_t,
 };
 use super::{
+    fog::ConstantMedium,
     hittable_origin::{random_double, HitRecord, Hittable},
     moving_sphere::MovingSphere,
     sphere::Sphere,
@@ -240,6 +241,78 @@ impl HittableList {
         ));
         let box2 = Arc::new(RotateY::new(box2, -18.0));
         let box2 = Arc::new(Translate::new(box2, Vec3::new(130.0, 0.0, 65.0)));
+        objects.add(box2);
+
+        objects
+    }
+
+    pub fn cornell_smoke() -> HittableList {
+        let mut objects = HittableList::default();
+
+        let red = Arc::new(Lambertian::new(Color::new(0.65, 0.05, 0.05)));
+        let white = Arc::new(Lambertian::new(Color::new(0.73, 0.73, 0.73)));
+        let green = Arc::new(Lambertian::new(Color::new(0.12, 0.45, 0.15)));
+        let light = Arc::new(DiffuseLight::new_col(Color::new(7.0, 7.0, 7.0)));
+
+        objects.add(Arc::new(YZRectangle::new(
+            0.0, 555.0, 0.0, 555.0, 555.0, green,
+        )));
+        objects.add(Arc::new(YZRectangle::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
+        objects.add(Arc::new(XZRectangle::new(
+            113.0, 443.0, 127.0, 432.0, 554.0, light,
+        )));
+        objects.add(Arc::new(XZRectangle::new(
+            0.0,
+            555.0,
+            0.0,
+            555.0,
+            0.0,
+            white.clone(),
+        )));
+        objects.add(Arc::new(XZRectangle::new(
+            0.0,
+            555.0,
+            0.0,
+            555.0,
+            555.0,
+            white.clone(),
+        )));
+        objects.add(Arc::new(XYRectangle::new(
+            0.0,
+            555.0,
+            0.0,
+            555.0,
+            555.0,
+            white.clone(),
+        )));
+
+        let box1 = Arc::new(Cube::new(
+            Point::new(0.0, 0.0, 0.0),
+            Point::new(165.0, 330.0, 165.0),
+            white.clone(),
+        ));
+        let box1 = Arc::new(RotateY::new(box1, 15.0));
+        let box1 = Arc::new(Translate::new(box1, Vec3::new(265.0, 0.0, 295.0)));
+        let box1 = Arc::new(ConstantMedium::new_col(
+            box1,
+            0.01,
+            Color::new(0.0, 0.0, 0.0),
+        ));
+
+        objects.add(box1);
+
+        let box2 = Arc::new(Cube::new(
+            Point::new(0.0, 0.0, 0.0),
+            Point::new(165.0, 165.0, 165.0),
+            white,
+        ));
+        let box2 = Arc::new(RotateY::new(box2, -18.0));
+        let box2 = Arc::new(Translate::new(box2, Vec3::new(130.0, 0.0, 65.0)));
+        let box2 = Arc::new(ConstantMedium::new_col(
+            box2,
+            0.01,
+            Color::new(1.0, 1.0, 1.0),
+        ));
         objects.add(box2);
 
         objects

@@ -48,12 +48,12 @@ fn main() {
     let height = 1000;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/book2_image20.jpg";
-    let samples_per_pixel = 500;
+    let path = "output/book2_image21.jpg";
+    let samples_per_pixel = 1000;
     let max_depth = 50;
     let camera = Camera::cornell_box();
 
-    let world = HittableList::cornell_box();
+    let world = HittableList::cornell_smoke();
 
     let bvhworld = BVHNode::new(world.objects.clone(), 0, world.objects.len(), 0.0, 1.0);
 
