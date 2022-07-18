@@ -115,12 +115,7 @@ impl Hittable for XZRectangle {
 
     fn pdf_value(&self, o: &Point, v: &Vec3) -> f64 {
         let mut rec = HitRecord::default();
-        if !self.hit(
-            &Ray::new(o.clone(), v.clone(), 0.0),
-            0.001,
-            INFINITY,
-            &mut rec,
-        ) {
+        if !self.hit(&Ray::new(*o, *v, 0.0), 0.001, INFINITY, &mut rec) {
             return 0.0;
         }
 

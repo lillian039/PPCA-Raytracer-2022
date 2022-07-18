@@ -68,7 +68,7 @@ impl PDF for HittablePDF {
     }
 
     fn value(&self, direction: &Vec3) -> f64 {
-        self.ptr.as_ref().unwrap().pdf_value(&self.o, &direction)
+        self.ptr.as_ref().unwrap().pdf_value(&self.o, direction)
     }
 }
 
