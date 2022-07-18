@@ -13,18 +13,22 @@ pub mod basic_tools;
 pub mod hittable;
 pub mod material;
 pub mod texture;
-use basic_tools::{
-    camera::Camera,
-    ray::Ray,
-    vec3::Vec3,
-    vec3::{Color, Point},
-};
+use basic_tools::{camera::Camera, ray::Ray, vec3::Color, vec3::Vec3};
 use hittable::{
     bvh::BVHNode,
     hittable_list::HittableList,
-    hittable_origin::{clamp, random_double, random_t, HitRecord, Hittable},
+    hittable_origin::{clamp, random_double, HitRecord, Hittable},
+    pdf::{CosinePDF, HittablePDF, MixturePDF, PDF},
+    xy_rectangle::XZRectangle,
 };
-fn ray_color(r: &Ray, background: Color, world: &dyn Hittable, depth: i32) -> Color {
+use material::diffuse_light::DiffuseLight;
+fn ray_color(
+    r: &Ray,
+    background: Color,
+    world: &dyn Hittable,
+    light: Arc<dyn Hittable>,
+    depth: i32,
+) -> Color {
     if depth <= 0 {
         return Color::new(0.0, 0.0, 0.0);
     }
@@ -50,27 +54,14 @@ fn ray_color(r: &Ray, background: Color, world: &dyn Hittable, depth: i32) -> Co
     {
         return emitted;
     }
-    //=== less noise ===
+    let p0 = Arc::new(HittablePDF::new(light.clone(), rec.p));
+    let p1 = Arc::new(CosinePDF::new(rec.normal));
+    let mixed_pdf = MixturePDF::new(p0, p1);
 
-    let on_light = Point::new(random_t(213.0, 343.0), 554.0, random_t(227.0, 332.0));
-    let mut to_light = on_light - rec.p;
-    let distance_squared = to_light.length_squared();
-    to_light = Vec3::unit_vector(to_light);
-
-    if Vec3::dot(&to_light, &rec.normal) < 0.0 {
-        return emitted;
-    }
-
-    let light_area = (343.0 - 213.0) * (332.0 - 227.0);
-    let light_cosine = to_light.y.abs();
-    if light_cosine < 0.000001 {
-        return emitted;
-    }
-    pdf = distance_squared / (light_cosine * light_area);
-    scattered = Ray::new(rec.p, to_light, r.time);
-
+    scattered = Ray::new(rec.p, mixed_pdf.generate(), r.time);
+    pdf = mixed_pdf.value(&scattered.direct);
     emitted
-        + ray_color(&scattered, background, world, depth - 1)
+        + ray_color(&scattered, background, world, light, depth - 1)
             * albedo
             * rec
                 .mat_ptr
@@ -88,12 +79,14 @@ fn main() {
     let height = 500;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/book3_image5.jpg";
-    let samples_per_pixel = 10;
+    let path = "output/book3_image8_2.jpg";
+    let samples_per_pixel = 1000;
     let max_depth = 50;
     let camera = Camera::cornell_box();
 
     let world = HittableList::cornell_box();
+    let light = Arc::new(DiffuseLight::new_col(Color::new(15.0, 15.0, 15.0)));
+    let lamp = Arc::new(XZRectangle::new(213.0, 343.0, 227.0, 332.0, 554.0, light));
 
     let bvhworld = BVHNode::new(world.objects.clone(), 0, world.objects.len(), 0.0, 1.0);
 
@@ -133,6 +126,7 @@ fn main() {
         .progress_chars("#>-"));
 
         let (tx, rx) = channel();
+        let lights = lamp.clone();
 
         threads.push((
             thread::spawn(move || {
@@ -149,7 +143,13 @@ fn main() {
                             let u = (x as f64 + random_double()) / (width as f64);
                             let v = (y as f64 + random_double()) / (height as f64);
                             let r = camera_thread.get_ray(u, v);
-                            col += ray_color(&r, background_color, &world_thread, max_depth);
+                            col += ray_color(
+                                &r,
+                                background_color,
+                                &world_thread,
+                                lights.clone(),
+                                max_depth,
+                            );
                         }
                         col = col / samples_per_pixel as f64;
                         let pixel_color = [

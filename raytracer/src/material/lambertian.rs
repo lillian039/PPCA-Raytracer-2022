@@ -2,7 +2,7 @@ use std::{f64::consts::PI, sync::Arc};
 
 use crate::texture::text::{SolidColor, Texture};
 
-use super::super::hittable::hittable_origin::HitRecord;
+use super::super::hittable::{hittable_origin::HitRecord, pdf::random_cosine_direction};
 use super::metal::Material;
 use super::{
     super::basic_tools::{
@@ -28,7 +28,7 @@ impl Material for Lambertian {
         let mut uvw = ONB::default();
         uvw.build_from_w(rec.normal);
 
-        let direction = uvw.local_vec(Vec3::random_cosine_direction());
+        let direction = uvw.local_vec(random_cosine_direction());
         *scattered = Ray::new(rec.p, Vec3::unit_vector(direction), r_in.time);
         *alb = self.albedo.as_ref().unwrap().value(rec.u, rec.v, &rec.p);
         *pdf = Vec3::dot(&uvw.w(), &scattered.direct) / PI;

@@ -4,7 +4,7 @@ use super::super::basic_tools;
 use super::super::material::metal::Material;
 use super::aabb::AABB;
 use super::hittable_list::HittableList;
-use super::hittable_origin::{HitRecord, Hittable};
+use super::hittable_origin::{random_t, HitRecord, Hittable};
 use basic_tools::{ray::Ray, vec3::Point, vec3::Vec3};
 use std::f64::INFINITY;
 use std::sync::Arc;
@@ -111,6 +111,33 @@ impl Hittable for XZRectangle {
         rec.mat_ptr = self.mp.clone();
         rec.p = r.at(t);
         true
+    }
+
+    fn pdf_value(&self, o: &Point, v: &Vec3) -> f64 {
+        let mut rec = HitRecord::default();
+        if !self.hit(
+            &Ray::new(o.clone(), v.clone(), 0.0),
+            0.001,
+            INFINITY,
+            &mut rec,
+        ) {
+            return 0.0;
+        }
+
+        let area = (self.x1 - self.x0) * (self.z1 - self.z0);
+        let distance_squard = rec.t * rec.t * v.length_squared();
+        let cosine = (Vec3::dot(v, &rec.normal) / v.length()).abs();
+
+        distance_squard / (cosine * area)
+    }
+
+    fn random(&self, o: &Vec3) -> Vec3 {
+        let random_point = Point::new(
+            random_t(self.x0, self.x1),
+            self.k,
+            random_t(self.z0, self.z1),
+        );
+        random_point - *o
     }
 }
 
