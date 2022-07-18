@@ -386,7 +386,7 @@ impl HittableList {
             70.0,
             glass_mat.clone(),
         ));
-        objects.add(boundary.clone());
+        // objects.add(boundary.clone());
         let smoke_ball = Arc::new(ConstantMedium::new_col(
             boundary,
             0.2,
@@ -438,6 +438,55 @@ impl HittableList {
         let many_balls = Arc::new(RotateY::new(many_balls, 15.0));
         let many_balls = Arc::new(Translate::new(many_balls, Vec3::new(-100.0, 270.0, 395.0)));
         objects.add(many_balls);
+
+        objects
+    }
+
+    pub fn planets() -> HittableList {
+        let mut objects = HittableList::default();
+
+        let light = Arc::new(DiffuseLight::new_col(Color::new(10.0, 10.0, 10.0)));
+        objects.add(Arc::new(Sphere::new(
+            Point::new(0.0, 10.0, 0.0),
+            10.0,
+            light,
+        )));
+        let glass_mat = Arc::new(Dielectric::new(1.5));
+        let boundary = Arc::new(Sphere::new(Point::new(0.0, 0.0, 0.0), 5000.0, glass_mat));
+        let smoke_ball = Arc::new(ConstantMedium::new_col(
+            boundary,
+            0.0001,
+            Color::new(1.0, 1.0, 1.0),
+        ));
+        objects.add(smoke_ball);
+
+        let light = Arc::new(DiffuseLight::new_col(Color::new(7.0, 7.0, 7.0)));
+        objects.add(Arc::new(XZRectangle::new(
+            100.0, -100.0, 100.0, -100.0, 200.0, light,
+        )));
+
+        let emat = Arc::new(Lambertian::newp(Arc::new(ImageTexture::new(
+            &String::from("earthmap.jpg"),
+        ))));
+        let earth = Arc::new(Sphere::new(Point::new(200.0, 100.0, 0.0), 70.0, emat));
+        objects.add(earth);
+        let mermat = Arc::new(Lambertian::newp(Arc::new(ImageTexture::new(
+            &String::from("mercury.jpg"),
+        ))));
+        let mercury = Arc::new(Sphere::new(Point::new(-150.0, 129.0, 0.0), 70.0, mermat));
+        objects.add(mercury);
+        let marsmat = Arc::new(Lambertian::newp(Arc::new(ImageTexture::new(
+            &String::from("Mars.jpg"),
+        ))));
+        let mars = Arc::new(Sphere::new(Point::new(-25.0, 88.0, 0.0), 50.0, marsmat));
+        objects.add(mars);
+        let metal_mat = Arc::new(Metal::new(Color::new(1.0, 1.0, 1.0), 0.0));
+        let ground = Arc::new(Sphere::new(
+            Point::new(0.0, -10000.0, 0.0),
+            10000.0,
+            metal_mat,
+        ));
+        objects.add(ground);
 
         objects
     }

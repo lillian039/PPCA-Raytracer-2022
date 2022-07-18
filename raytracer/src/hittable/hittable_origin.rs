@@ -32,7 +32,7 @@ pub trait Hittable: Send + Sync {
 }
 
 pub fn random_double() -> f64 {
-    rand::thread_rng().gen_range(0..100) as f64 / 100.0
+    rand::thread_rng().gen_range(0.0..1.0)
 }
 
 pub fn random_t(min: f64, max: f64) -> f64 {
