@@ -19,7 +19,7 @@ pub trait Material: Send + Sync {
         1.0
     }
 
-    fn emit(&self, _u: f64, _v: f64, _p: &Point) -> Color {
+    fn emit(&self, _u: f64, _v: f64, _p: &Point, _r_in: &Ray, _rec: &HitRecord) -> Color {
         Color::new(0.0, 0.0, 0.0)
     }
 }

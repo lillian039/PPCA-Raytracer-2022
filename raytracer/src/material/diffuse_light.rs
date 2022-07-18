@@ -38,7 +38,10 @@ impl Material for DiffuseLight {
         false
     }
 
-    fn emit(&self, _u: f64, _v: f64, _p: &Point) -> Color {
-        self.emit.as_ref().unwrap().value(_u, _v, _p)
+    fn emit(&self, u: f64, v: f64, p: &Point, _r_in: &Ray, rec: &HitRecord) -> Color {
+        if rec.front_face {
+            return self.emit.as_ref().unwrap().value(u, v, p);
+        }
+        Color::new(0.0, 0.0, 0.0)
     }
 }

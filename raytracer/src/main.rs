@@ -13,11 +13,16 @@ pub mod basic_tools;
 pub mod hittable;
 pub mod material;
 pub mod texture;
-use basic_tools::{camera::Camera, ray::Ray, vec3::Color, vec3::Vec3};
+use basic_tools::{
+    camera::Camera,
+    ray::Ray,
+    vec3::Vec3,
+    vec3::{Color, Point},
+};
 use hittable::{
     bvh::BVHNode,
     hittable_list::HittableList,
-    hittable_origin::{clamp, random_double, HitRecord, Hittable},
+    hittable_origin::{clamp, random_double, random_t, HitRecord, Hittable},
 };
 fn ray_color(r: &Ray, background: Color, world: &dyn Hittable, depth: i32) -> Color {
     if depth <= 0 {
@@ -28,7 +33,11 @@ fn ray_color(r: &Ray, background: Color, world: &dyn Hittable, depth: i32) -> Co
         return background;
     }
     let mut scattered = Ray::default();
-    let emitted = rec.mat_ptr.as_ref().unwrap().emit(rec.u, rec.v, &rec.p);
+    let emitted = rec
+        .mat_ptr
+        .as_ref()
+        .unwrap()
+        .emit(rec.u, rec.v, &rec.p, &r, &rec);
 
     let mut pdf = 1.0;
     let mut albedo = Vec3::default();
@@ -41,6 +50,25 @@ fn ray_color(r: &Ray, background: Color, world: &dyn Hittable, depth: i32) -> Co
     {
         return emitted;
     }
+    //=== less noise ===
+
+    let on_light = Point::new(random_t(213.0, 343.0), 554.0, random_t(227.0, 332.0));
+    let mut to_light = on_light - rec.p;
+    let distance_squared = to_light.length_squared();
+    to_light = Vec3::unit_vector(to_light);
+
+    if Vec3::dot(&to_light, &rec.normal) < 0.0 {
+        return emitted;
+    }
+
+    let light_area = (343.0 - 213.0) * (332.0 - 227.0);
+    let light_cosine = to_light.y.abs();
+    if light_cosine < 0.000001 {
+        return emitted;
+    }
+    pdf = distance_squared / (light_cosine * light_area);
+    scattered = Ray::new(rec.p, to_light, r.time);
+
     emitted
         + ray_color(&scattered, background, world, depth - 1)
             * albedo
@@ -60,8 +88,8 @@ fn main() {
     let height = 500;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/book3_image4.jpg";
-    let samples_per_pixel = 500;
+    let path = "output/book3_image5.jpg";
+    let samples_per_pixel = 10;
     let max_depth = 50;
     let camera = Camera::cornell_box();
 
