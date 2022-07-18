@@ -37,7 +37,7 @@ fn ray_color(r: &Ray, background: Color, world: &dyn Hittable, depth: i32) -> Co
         .mat_ptr
         .as_ref()
         .unwrap()
-        .emit(rec.u, rec.v, &rec.p, &r, &rec);
+        .emit(rec.u, rec.v, &rec.p, r, &rec);
 
     let mut pdf = 1.0;
     let mut albedo = Vec3::default();
