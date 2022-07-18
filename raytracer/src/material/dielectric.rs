@@ -31,6 +31,7 @@ impl Material for Dielectric {
         rec: &crate::hittable::hittable_origin::HitRecord,
         attenuation: &mut Color,
         scattered: &mut Ray,
+        _pdf: &mut f64,
     ) -> bool {
         *attenuation = Color::new(1.0, 1.0, 1.0);
         let refraction_ratio = if rec.front_face {

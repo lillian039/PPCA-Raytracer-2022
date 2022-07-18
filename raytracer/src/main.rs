@@ -28,32 +28,44 @@ fn ray_color(r: &Ray, background: Color, world: &dyn Hittable, depth: i32) -> Co
         return background;
     }
     let mut scattered = Ray::default();
-    let mut attenuation = Vec3::default();
     let emitted = rec.mat_ptr.as_ref().unwrap().emit(rec.u, rec.v, &rec.p);
+
+    let mut pdf = 1.0;
+    let mut albedo = Vec3::default();
+
     if !rec
         .mat_ptr
         .as_ref()
         .unwrap()
-        .scatter(r, &rec, &mut attenuation, &mut scattered)
+        .scatter(r, &rec, &mut albedo, &mut scattered, &mut pdf)
     {
         return emitted;
     }
-    emitted + ray_color(&scattered, background, world, depth - 1) * attenuation
+    emitted
+        + ray_color(&scattered, background, world, depth - 1)
+            * albedo
+            * rec
+                .mat_ptr
+                .clone()
+                .as_ref()
+                .unwrap()
+                .scattering_pdf(r, &rec, &scattered)
+            / pdf
 }
 fn main() {
     print!("{}[2J", 27 as char); // Clear screen 27 as char --> esc
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char); // Set cursor position as 1,1
 
     let aspect_ratio = 1.0;
-    let height = 1200;
+    let height = 500;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/image1.jpg";
-    let samples_per_pixel = 1000;
+    let path = "output/book3_image4.jpg";
+    let samples_per_pixel = 500;
     let max_depth = 50;
-    let camera = Camera::final_scence();
+    let camera = Camera::cornell_box();
 
-    let world = HittableList::final_scence();
+    let world = HittableList::cornell_box();
 
     let bvhworld = BVHNode::new(world.objects.clone(), 0, world.objects.len(), 0.0, 1.0);
 

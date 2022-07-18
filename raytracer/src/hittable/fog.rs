@@ -31,6 +31,7 @@ impl Material for Isotropic {
         rec: &HitRecord,
         attenuation: &mut Color,
         scattered: &mut Ray,
+        _pdf: &mut f64,
     ) -> bool {
         *scattered = Ray::new(rec.p, Vec3::random_in_unit_sphere(), r_in.time);
         *attenuation = self.albedo.as_ref().unwrap().value(rec.u, rec.v, &rec.p);
