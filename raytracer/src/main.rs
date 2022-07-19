@@ -23,9 +23,8 @@ use hittable::{
     hittable_list::HittableList,
     hittable_origin::{clamp, random_double, HitRecord, Hittable},
     pdf::{HittablePDF, MixturePDF, PDF},
-    xy_rectangle::XZRectangle,
 };
-use material::{diffuse_light::DiffuseLight, metal::ScatterRecord};
+use material::metal::ScatterRecord;
 fn ray_color(
     r: &Ray,
     background: Color,
@@ -80,22 +79,22 @@ fn ray_color(
                 .scattering_pdf(r, &rec, &scattered)
             / pdf
 }
+
 fn main() {
     print!("{}[2J", 27 as char); // Clear screen 27 as char --> esc
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char); // Set cursor position as 1,1
 
     let aspect_ratio = 1.0;
-    let height = 500;
+    let height = 800;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/book3_image13_1.jpg";
-    let samples_per_pixel = 1000;
+    let path = "output/book3_image13_1_10.jpg";
+    let samples_per_pixel = 5000;
     let max_depth = 50;
 
     let camera = Camera::final_scence();
     let world = HittableList::final_scence();
-    let light = Arc::new(DiffuseLight::new_col(Color::new(7.0, 7.0, 7.0)));
-    let lamp = Arc::new(XZRectangle::new(123.0, 423.0, 147.0, 412.0, 554.0, light));
+    let lamp = Arc::new(HittableList::lights());
 
     let bvhworld = BVHNode::new(world.objects.clone(), 0, world.objects.len(), 0.0, 1.0);
 

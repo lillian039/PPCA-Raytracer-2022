@@ -226,18 +226,21 @@ impl HittableList {
 
     pub fn lights() -> HittableList {
         let mut lights = HittableList::default();
-        let light = Arc::new(DiffuseLight::new_col(Color::new(15.0, 15.0, 15.0)));
+        let light = Arc::new(DiffuseLight::new_col(Color::new(7.0, 7.0, 7.0)));
         let lamp = Arc::new(XZRectangle::new(
-            213.0,
-            343.0,
-            227.0,
-            332.0,
+            123.0,
+            423.0,
+            147.0,
+            412.0,
             554.0,
             light.clone(),
         ));
         lights.add(lamp);
-        let ball = Arc::new(Sphere::new(Point::new(190.0, 90.0, 190.0), 90.0, light));
-        lights.add(ball);
+        lights.add(Arc::new(Sphere::new(
+            Point::new(260.0, 150.0, 45.0),
+            50.0,
+            light,
+        )));
         lights
     }
 
