@@ -74,7 +74,7 @@ impl Hittable for Sphere {
     fn pdf_value(&self, o: &Point, v: &Vec3) -> f64 {
         let mut rec = HitRecord::default();
         if !self.hit(&Ray::new(*o, *v, 0.0), 0.001, INFINITY, &mut rec) {
-            return 0.0;
+            return 1.0;
         }
 
         let cos_thea_max = (1.0 - self.radius.powi(2) / (self.center - *o).length_squared()).sqrt();
