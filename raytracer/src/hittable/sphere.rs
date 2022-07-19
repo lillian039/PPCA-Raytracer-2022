@@ -1,9 +1,10 @@
 use super::super::basic_tools;
-use super::super::material::metal::Material;
+use super::super::material::metal::{Material, ONB};
 use super::aabb::AABB;
 use super::hittable_origin::{HitRecord, Hittable};
 use basic_tools::{ray::Ray, vec3::Point, vec3::Vec3};
 use std::f64::consts::PI;
+use std::f64::INFINITY;
 use std::sync::Arc;
 
 #[derive(Clone, Default)]
@@ -68,5 +69,24 @@ impl Hittable for Sphere {
             self.center + Vec3::new(self.radius, self.radius, self.radius),
         );
         true
+    }
+
+    fn pdf_value(&self, o: &Point, v: &Vec3) -> f64 {
+        let mut rec = HitRecord::default();
+        if !self.hit(&Ray::new(*o, *v, 0.0), 0.001, INFINITY, &mut rec) {
+            return 0.0;
+        }
+
+        let cos_thea_max = (1.0 - self.radius.powi(2) / (self.center - *o).length_squared()).sqrt();
+        let solid_angle = 2.0 * PI * (1.0 - cos_thea_max);
+        1.0 / solid_angle
+    }
+
+    fn random(&self, o: &Vec3) -> Vec3 {
+        let direction = self.center - *o;
+        let distance_squared = direction.length_squared();
+        let mut uvw = ONB::default();
+        uvw.build_from_w(direction);
+        uvw.local_vec(Vec3::random_to_sphere(self.radius, distance_squared))
     }
 }

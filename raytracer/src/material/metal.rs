@@ -2,21 +2,22 @@ use super::super::basic_tools::{
     ray::Ray,
     vec3::{Color, Point, Vec3},
 };
-use super::super::hittable::hittable_origin::HitRecord;
+use super::super::hittable::{hittable_origin::HitRecord, pdf::PDF};
+use std::sync::Arc;
+#[derive(Default)]
+pub struct ScatterRecord {
+    pub specular_ray: Ray,
+    pub is_specular: bool,
+    pub attenuation: Color,
+    pub pdf_ptr: Option<Arc<dyn PDF>>,
+}
 pub trait Material: Send + Sync {
-    fn scatter(
-        &self,
-        _r_in: &Ray,
-        _rec: &HitRecord,
-        _attenuation: &mut Color,
-        _scattered: &mut Ray,
-        _pdf: &mut f64,
-    ) -> bool {
+    fn scatter(&self, _r_in: &Ray, _rec: &HitRecord, _src: &mut ScatterRecord) -> bool {
         false
     }
 
     fn scattering_pdf(&self, _r_in: &Ray, _rec: &HitRecord, _scattered: &Ray) -> f64 {
-        1.0
+        0.0
     }
 
     fn emit(&self, _u: f64, _v: f64, _p: &Point, _r_in: &Ray, _rec: &HitRecord) -> Color {
@@ -67,22 +68,17 @@ pub struct Metal {
 }
 
 impl Material for Metal {
-    fn scatter(
-        &self,
-        r_in: &Ray,
-        rec: &HitRecord,
-        attenuation: &mut Color,
-        scattered: &mut Ray,
-        _pdf: &mut f64,
-    ) -> bool {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord, srec: &mut ScatterRecord) -> bool {
         let reflected = Vec3::reflect(Vec3::unit_vector(r_in.direct), rec.normal);
-        *scattered = Ray::new(
+        srec.specular_ray = Ray::new(
             rec.p,
             reflected + Vec3::random_in_unit_sphere() * self.fuzz,
-            r_in.time,
+            0.0,
         );
-        *attenuation = self.albebo;
-        Vec3::dot(&scattered.direct, &rec.normal) > 0.0
+        srec.attenuation = self.albebo;
+        srec.is_specular = true;
+        srec.pdf_ptr = None;
+        true
     }
 }
 

@@ -98,7 +98,7 @@ impl ImageTexture {
         let path = Path::new(&pathname);
         let image = image::open(path).unwrap();
 
-        println!("find picture!");
+        //   println!("find picture!");
 
         let width = image.width();
         let height = image.height();

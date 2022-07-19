@@ -1,7 +1,7 @@
 use crate::texture::text::{SolidColor, Texture};
 
 use super::super::basic_tools;
-use super::super::material::metal::Material;
+use super::super::material::metal::{Material, ScatterRecord};
 use super::aabb::AABB;
 use super::hittable_origin::{random_double, HitRecord, Hittable};
 use basic_tools::{ray::Ray, vec3::Color, vec3::Vec3};
@@ -25,16 +25,10 @@ impl Isotropic {
 }
 
 impl Material for Isotropic {
-    fn scatter(
-        &self,
-        r_in: &Ray,
-        rec: &HitRecord,
-        attenuation: &mut Color,
-        scattered: &mut Ray,
-        _pdf: &mut f64,
-    ) -> bool {
-        *scattered = Ray::new(rec.p, Vec3::random_in_unit_sphere(), r_in.time);
-        *attenuation = self.albedo.as_ref().unwrap().value(rec.u, rec.v, &rec.p);
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord, srec: &mut ScatterRecord) -> bool {
+        srec.specular_ray = Ray::new(rec.p, Vec3::random_in_unit_sphere(), r_in.time);
+        srec.attenuation = self.albedo.as_ref().unwrap().value(rec.u, rec.v, &rec.p);
+        srec.is_specular = false;
         true
     }
 }

@@ -3,7 +3,7 @@ use super::super::basic_tools::{
     vec3::{Color, Point},
 };
 use super::super::hittable::hittable_origin::HitRecord;
-use crate::material::metal::Material;
+use crate::material::metal::{Material, ScatterRecord};
 use crate::texture::text::{SolidColor, Texture};
 use std::sync::Arc;
 
@@ -27,14 +27,7 @@ impl DiffuseLight {
 }
 
 impl Material for DiffuseLight {
-    fn scatter(
-        &self,
-        _r_in: &Ray,
-        _rec: &HitRecord,
-        _attenuation: &mut Color,
-        _scattered: &mut Ray,
-        _pdf: &mut f64,
-    ) -> bool {
+    fn scatter(&self, _r_in: &Ray, _rec: &HitRecord, _srec: &mut ScatterRecord) -> bool {
         false
     }
 

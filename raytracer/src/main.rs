@@ -13,15 +13,18 @@ pub mod basic_tools;
 pub mod hittable;
 pub mod material;
 pub mod texture;
-use basic_tools::{camera::Camera, ray::Ray, vec3::Color, vec3::Vec3};
+use basic_tools::{
+    camera::Camera,
+    ray::Ray,
+    vec3::{Color, Vec3},
+};
 use hittable::{
     bvh::BVHNode,
     hittable_list::HittableList,
     hittable_origin::{clamp, random_double, HitRecord, Hittable},
-    pdf::{CosinePDF, HittablePDF, MixturePDF, PDF},
-    xy_rectangle::XZRectangle,
+    pdf::{HittablePDF, MixturePDF, PDF},
 };
-use material::diffuse_light::DiffuseLight;
+use material::metal::ScatterRecord;
 fn ray_color(
     r: &Ray,
     background: Color,
@@ -36,33 +39,31 @@ fn ray_color(
     if !world.hit(r, 0.001, INFINITY, &mut rec) {
         return background;
     }
-    let mut scattered = Ray::default();
+    let mut srec = ScatterRecord::default();
     let emitted = rec
         .mat_ptr
         .as_ref()
         .unwrap()
         .emit(rec.u, rec.v, &rec.p, r, &rec);
 
-    let mut pdf = 1.0;
-    let mut albedo = Vec3::default();
-
-    if !rec
-        .mat_ptr
-        .as_ref()
-        .unwrap()
-        .scatter(r, &rec, &mut albedo, &mut scattered, &mut pdf)
-    {
+    if !rec.mat_ptr.as_ref().unwrap().scatter(r, &rec, &mut srec) {
         return emitted;
     }
-    let p0 = Arc::new(HittablePDF::new(light.clone(), rec.p));
-    let p1 = Arc::new(CosinePDF::new(rec.normal));
-    let mixed_pdf = MixturePDF::new(p0, p1);
 
-    scattered = Ray::new(rec.p, mixed_pdf.generate(), r.time);
-    pdf = mixed_pdf.value(&scattered.direct);
+    if srec.is_specular {
+        let a =
+            ray_color(&srec.specular_ray, background, world, light, depth - 1) * srec.attenuation;
+        return a;
+    }
+
+    let light_ptr = Arc::new(HittablePDF::new(light.clone(), rec.p));
+    let p = MixturePDF::new(light_ptr, srec.pdf_ptr.as_ref().unwrap().clone());
+
+    let scattered = Ray::new(rec.p, p.generate(), r.time);
+    let pdf = p.value(&scattered.direct);
     emitted
         + ray_color(&scattered, background, world, light, depth - 1)
-            * albedo
+            * srec.attenuation
             * rec
                 .mat_ptr
                 .clone()
@@ -79,14 +80,15 @@ fn main() {
     let height = 500;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/book3_image8_2.jpg";
+    let path = "output/book3_image12.jpg";
     let samples_per_pixel = 1000;
     let max_depth = 50;
-    let camera = Camera::cornell_box();
 
+    let camera = Camera::cornell_box();
     let world = HittableList::cornell_box();
-    let light = Arc::new(DiffuseLight::new_col(Color::new(15.0, 15.0, 15.0)));
-    let lamp = Arc::new(XZRectangle::new(213.0, 343.0, 227.0, 332.0, 554.0, light));
+    /*  let light = Arc::new(DiffuseLight::new_col(Color::new(15.0, 15.0, 15.0)));
+    let lamp = Arc::new(XZRectangle::new(213.0, 343.0, 227.0, 332.0, 554.0, light)); */
+    let lamp = Arc::new(HittableList::lights());
 
     let bvhworld = BVHNode::new(world.objects.clone(), 0, world.objects.len(), 0.0, 1.0);
 
@@ -126,7 +128,7 @@ fn main() {
         .progress_chars("#>-"));
 
         let (tx, rx) = channel();
-        let lights = lamp.clone();
+        let light = lamp.clone();
 
         threads.push((
             thread::spawn(move || {
@@ -147,15 +149,27 @@ fn main() {
                                 &r,
                                 background_color,
                                 &world_thread,
-                                lights.clone(),
+                                light.clone(),
                                 max_depth,
                             );
                         }
                         col = col / samples_per_pixel as f64;
+                        let mut r = col.x;
+                        let mut g = col.y;
+                        let mut b = col.z;
+                        if r.is_nan() {
+                            r = 0.0;
+                        }
+                        if g.is_nan() {
+                            g = 0.0;
+                        }
+                        if b.is_nan() {
+                            b = 0.0;
+                        }
                         let pixel_color = [
-                            (clamp(col.x.sqrt(), 0.0, 0.999) * 255.999) as u8,
-                            (clamp(col.y.sqrt(), 0.0, 0.999) * 255.999) as u8,
-                            (clamp(col.z.sqrt(), 0.0, 0.999) * 255.999) as u8,
+                            (clamp(r.sqrt(), 0.0, 0.999) * 255.999) as u8,
+                            (clamp(g.sqrt(), 0.0, 0.999) * 255.999) as u8,
+                            (clamp(b.sqrt(), 0.0, 0.999) * 255.999) as u8,
                         ];
                         pixel_color_thread.push(pixel_color);
 

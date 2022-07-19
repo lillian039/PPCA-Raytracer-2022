@@ -3,7 +3,7 @@ use super::super::basic_tools::{
     vec3::{Color, Vec3},
 };
 use super::super::hittable::hittable_origin::random_double;
-use super::metal::Material;
+use super::metal::{Material, ScatterRecord};
 pub struct Dielectric {
     pub ir: f64, //index of refrection
 }
@@ -29,11 +29,11 @@ impl Material for Dielectric {
         &self,
         r_in: &Ray,
         rec: &crate::hittable::hittable_origin::HitRecord,
-        attenuation: &mut Color,
-        scattered: &mut Ray,
-        _pdf: &mut f64,
+        srec: &mut ScatterRecord,
     ) -> bool {
-        *attenuation = Color::new(1.0, 1.0, 1.0);
+        srec.is_specular = true;
+        srec.pdf_ptr = None;
+        srec.attenuation = Color::new(1.0, 1.0, 1.0);
         let refraction_ratio = if rec.front_face {
             1.0 / self.ir
         } else {
@@ -50,7 +50,7 @@ impl Material for Dielectric {
         } else {
             Vec3::refract(unit_direction, rec.normal, refraction_ratio)
         };
-        *scattered = Ray::new(rec.p, direction, r_in.time);
+        srec.specular_ray = Ray::new(rec.p, direction, r_in.time);
         true
     }
 }

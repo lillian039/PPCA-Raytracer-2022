@@ -1,5 +1,8 @@
 use super::super::hittable::hittable_origin::{random_double, random_t};
-use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Neg, Sub};
+use std::{
+    f64::consts::PI,
+    ops::{Add, AddAssign, Div, Mul, MulAssign, Neg, Sub},
+};
 pub type Color = Vec3;
 pub type Point = Vec3;
 
@@ -102,6 +105,18 @@ impl Vec3 {
             p = Vec3::new(random_t(-1.0, 1.0), random_t(-1.0, 1.0), 0.0);
         }
         p
+    }
+
+    pub fn random_to_sphere(radius: f64, distance_squared: f64) -> Vec3 {
+        let r1 = random_double();
+        let r2 = random_double();
+        let z = 1.0 + r2 * ((1.0 - radius * radius / distance_squared).sqrt() - 1.0);
+
+        let phi = 2.0 * PI * r1;
+        let x = phi.cos() * (1.0 - z * z).sqrt();
+        let y = phi.sin() * (1.0 - z * z).sqrt();
+
+        Vec3::new(x, y, z)
     }
 }
 
