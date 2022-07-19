@@ -23,8 +23,9 @@ use hittable::{
     hittable_list::HittableList,
     hittable_origin::{clamp, random_double, HitRecord, Hittable},
     pdf::{HittablePDF, MixturePDF, PDF},
+    xy_rectangle::XZRectangle,
 };
-use material::metal::ScatterRecord;
+use material::{diffuse_light::DiffuseLight, metal::ScatterRecord};
 fn ray_color(
     r: &Ray,
     background: Color,
@@ -57,6 +58,13 @@ fn ray_color(
     }
 
     let light_ptr = Arc::new(HittablePDF::new(light.clone(), rec.p));
+
+    if srec.pdf_ptr.is_none() {
+        return emitted
+            + ray_color(&srec.specular_ray, background, world, light, depth - 1)
+                * srec.attenuation;
+    }
+
     let p = MixturePDF::new(light_ptr, srec.pdf_ptr.as_ref().unwrap().clone());
 
     let scattered = Ray::new(rec.p, p.generate(), r.time);
@@ -80,15 +88,14 @@ fn main() {
     let height = 500;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/book3_image12.jpg";
+    let path = "output/book3_image13_1.jpg";
     let samples_per_pixel = 1000;
     let max_depth = 50;
 
-    let camera = Camera::cornell_box();
-    let world = HittableList::cornell_box();
-    /*  let light = Arc::new(DiffuseLight::new_col(Color::new(15.0, 15.0, 15.0)));
-    let lamp = Arc::new(XZRectangle::new(213.0, 343.0, 227.0, 332.0, 554.0, light)); */
-    let lamp = Arc::new(HittableList::lights());
+    let camera = Camera::final_scence();
+    let world = HittableList::final_scence();
+    let light = Arc::new(DiffuseLight::new_col(Color::new(7.0, 7.0, 7.0)));
+    let lamp = Arc::new(XZRectangle::new(123.0, 423.0, 147.0, 412.0, 554.0, light));
 
     let bvhworld = BVHNode::new(world.objects.clone(), 0, world.objects.len(), 0.0, 1.0);
 
