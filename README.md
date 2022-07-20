@@ -2,13 +2,13 @@
 
 光追模拟！
 
-目前进度：完成Book 1 的 final scence
+目前进度：完成三本书
 
 ## Book 1
 
 final scence 渲染结果：
 
-![image21.jpg (2560×1600) (raw.githubusercontent.com)](https://raw.githubusercontent.com/lillian039/PPCA-Raytracer-2022/main/img/image21.jpg)
+![image21.jpg](https://s2.loli.net/2022/07/20/mBzZNlSYThy2Cox.jpg)
 
 完成基础函数 basic_tools 系列：
 
@@ -49,7 +49,7 @@ final scence 渲染结果：
 
 final scene 渲染结果：
 
-![book3_image13_1_10.jpg (800×800)](https://raw.githubusercontent.com/lillian039/PPCA-Raytracer-2022/main/img/book3_image13_1_10.jpg)
+![book3_image13_1_10.jpg](https://s2.loli.net/2022/07/20/BdbxwjCRDha1WQf.jpg)
 
 修改基础函数basic_tools系列：
 
@@ -98,7 +98,7 @@ final scene 渲染结果：
 
 cornell_box 渲染结果：
 
-![book3_image12_1000.jpg (500×500)](https://raw.githubusercontent.com/lillian039/PPCA-Raytracer-2022/main/img/book3_image12_1000.jpg)
+![book3_image12_1000.jpg](https://s2.loli.net/2022/07/20/1IQjtnovgpTuNbH.jpg)
 
 改进光线渲染算法，减少噪点
 
