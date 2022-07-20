@@ -14,7 +14,7 @@ use hittable::{
     sphere::Sphere,
 };
 use material::{lambertian::Lambertian, metal::Metal};
-fn ray_color(r: &Ray, world: &dyn Hittable, depth: i32) -> Color {
+fn ray_color<M>(r: &Ray, world: &dyn Hittable<M>, depth: i32) -> Color {
     if depth <= 0 {
         return Color::new(0.0, 0.0, 0.0);
     }
@@ -37,8 +37,8 @@ fn main() {
     print!("{}[2J", 27 as char); // Clear screen 27 as char --> esc
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char); // Set cursor position as 1,1
 
-    let height = 900;
-    let width = 1600;
+    let height = 225;
+    let width = 400;
     let quality = 100; // From 0 to 100
     let path = "output/image11.jpg";
     let samples_per_pixel = 100;

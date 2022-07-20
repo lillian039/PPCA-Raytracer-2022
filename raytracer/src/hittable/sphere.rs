@@ -2,16 +2,18 @@ use super::super::basic_tools;
 use super::super::material::metal::Material;
 use super::hittable_origin::{HitRecord, Hittable};
 use basic_tools::{ray::Ray, vec3::Point, vec3::Vec3};
-use std::rc::Rc;
 
-pub struct Sphere {
+pub struct  Sphere<M>
+where M:Material {
     pub center: Point,
     pub radius: f64,
-    pub mat_ptr: Rc<dyn Material>,
+    pub mat_ptr: M,
 }
 
-impl Sphere {
-    pub fn new(cen: Point, r: f64, mat_ptr: Rc<dyn Material>) -> Self {
+impl <M> Sphere<M>
+where M:Material {
+    pub fn new (cen: Point, r: f64, mat_ptr: M) -> Self
+     {
         Self {
             center: (cen),
             radius: (r),
@@ -20,8 +22,9 @@ impl Sphere {
     }
 }
 //whether hit the shpere t is the time
-impl Hittable for Sphere {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+impl <M> Hittable<M> for Sphere<M>
+where M:Material{
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord<M>> {
         let oc: Vec3 = r.point - self.center;
         let a = r.direct.length_squared();
         let half_b = Vec3::dot(&oc, &r.direct);
@@ -43,7 +46,7 @@ impl Hittable for Sphere {
             normal: Vec3::default(),
             t: root,
             front_face: bool::default(),
-            mat_ptr: self.mat_ptr.clone(),
+            mat_ptr: self.mat_ptr,
         };
         let outward_normal = (rec.p - self.center) / self.radius;
         rec.set_face_normal(r, &outward_normal);

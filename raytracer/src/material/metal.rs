@@ -3,11 +3,12 @@ use super::super::basic_tools::{
     vec3::{Color, Vec3},
 };
 use super::super::hittable::hittable_origin::HitRecord;
+use std::sync::Arc;
 pub trait Material {
     fn scatter(
         &self,
         r_in: &Ray,
-        rec: &HitRecord,
+        rec: Arc<HitRecord<dyn Material>>,
         attenuation: &mut Color,
         scattered: &mut Ray,
     ) -> bool;
@@ -21,7 +22,7 @@ impl Material for Metal {
     fn scatter(
         &self,
         r_in: &Ray,
-        rec: &HitRecord,
+        rec: &HitRecord<Arc<dyn Material>>,
         attenuation: &mut Color,
         scattered: &mut Ray,
     ) -> bool {

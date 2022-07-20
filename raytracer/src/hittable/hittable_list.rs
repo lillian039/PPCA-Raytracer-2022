@@ -1,17 +1,20 @@
+use crate::material::metal::Material;
+
 use super::super::basic_tools::ray::Ray;
 use super::hittable_origin::{HitRecord, Hittable};
-use std::rc::Rc;
+use std::sync::Arc;
 #[derive(Clone, Default)]
-pub struct HittableList {
-    pub objects: Vec<Rc<dyn Hittable>>,
+pub struct HittableList<M:Material> 
+where M:Material{
+    pub objects: Vec<Arc<dyn Hittable<M>>>,
 }
 
-impl HittableList {
+impl <M:Material> HittableList <M>{
     pub fn clear(&mut self) {
         self.objects.clear()
     }
 
-    pub fn add(&mut self, object: Rc<dyn Hittable>) {
+    pub fn add(&mut self, object: dyn Hittable<M>) {
         self.objects.push(object);
     }
 
@@ -22,8 +25,9 @@ impl HittableList {
     }
 }
 
-impl Hittable for HittableList {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+impl <M> Hittable<M> for HittableList<M>
+where M:Material {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord<M>> {
         let mut rec: Option<HitRecord> = None;
         let mut closest_so_far = t_max;
 

@@ -4,16 +4,17 @@ use super::super::basic_tools::{
 };
 use super::super::hittable::hittable_origin::HitRecord;
 use super::metal::Material;
-
+use std::sync::Arc;
 pub struct Lambertian {
     pub albedo: Color, //反射率
 }
 
-impl Material for Lambertian {
+impl Material for Lambertian
+ {
     fn scatter(
         &self,
         _r_in: &Ray,
-        rec: &HitRecord,
+        rec: &Arc<HitRecord<Material>>,
         attenuation: &mut Color,
         scattered: &mut Ray,
     ) -> bool {
