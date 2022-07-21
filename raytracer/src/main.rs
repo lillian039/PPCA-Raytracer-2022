@@ -55,15 +55,7 @@ fn ray_color(
             ray_color(&srec.specular_ray, background, world, light, depth - 1) * srec.attenuation;
         return a;
     }
-
     let light_ptr = Arc::new(HittablePDF::new(light.clone(), rec.p));
-
-    if srec.pdf_ptr.is_none() {
-        return emitted
-            + ray_color(&srec.specular_ray, background, world, light, depth - 1)
-                * srec.attenuation;
-    }
-
     let p = MixturePDF::new(light_ptr, srec.pdf_ptr.as_ref().unwrap().clone());
 
     let scattered = Ray::new(rec.p, p.generate(), r.time);
@@ -85,15 +77,15 @@ fn main() {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char); // Set cursor position as 1,1
 
     let aspect_ratio = 1.0;
-    let height = 800;
+    let height = 500;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/book3_image13_1_100_2.jpg";
-    let samples_per_pixel = 5000;
+    let path = "output/try2.jpg";
+    let samples_per_pixel = 100;
     let max_depth = 50;
 
-    let camera = Camera::final_scence();
-    let world = HittableList::final_scence();
+    let camera = Camera::cornell_box();
+    let world = HittableList::cornell_box();
     let lamp = Arc::new(HittableList::lights());
 
     let bvhworld = BVHNode::new(world.objects.clone(), 0, world.objects.len(), 0.0, 1.0);
@@ -104,6 +96,7 @@ fn main() {
         style(quality.to_string()).yellow(),
     );
 
+    println!("Sample per pixel: {}", samples_per_pixel);
     // Create image data
     let mut img: RgbImage = ImageBuffer::new(width, height);
 

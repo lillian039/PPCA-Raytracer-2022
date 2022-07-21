@@ -116,7 +116,7 @@ impl Hittable for XZRectangle {
     fn pdf_value(&self, o: &Point, v: &Vec3) -> f64 {
         let mut rec = HitRecord::default();
         if !self.hit(&Ray::new(*o, *v, 0.0), 0.001, INFINITY, &mut rec) {
-            return 1.0;
+            return 0.0;
         }
 
         let area = (self.x1 - self.x0) * (self.z1 - self.z0);

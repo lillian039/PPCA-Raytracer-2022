@@ -15,6 +15,7 @@ use super::{
     hittable_origin::{random_t, HitRecord, Hittable},
     moving_sphere::MovingSphere,
     sphere::Sphere,
+    triangle::Triangle,
     xy_rectangle::{Cube, FlipFace, RotateY, Translate, XYRectangle, XZRectangle, YZRectangle},
 };
 
@@ -226,6 +227,16 @@ impl HittableList {
 
     pub fn lights() -> HittableList {
         let mut lights = HittableList::default();
+        let light = Arc::new(DiffuseLight::new_col(Color::new(15.0, 15.0, 15.0)));
+        let lamp = Arc::new(XZRectangle::new(213.0, 343.0, 227.0, 332.0, 554.0, light));
+        lights.add(lamp);
+        /*   let ball = Arc::new(Sphere::new(Point::new(190.0, 90.0, 190.0), 90.0, light));
+        lights.add(ball); */
+        lights
+    }
+
+    pub fn lights_final_scence() -> HittableList {
+        let mut lights = HittableList::default();
         let light = Arc::new(DiffuseLight::new_col(Color::new(7.0, 7.0, 7.0)));
         let lamp = Arc::new(XZRectangle::new(
             123.0,
@@ -243,9 +254,11 @@ impl HittableList {
         )));
         lights
     }
-
     pub fn cornell_box() -> HittableList {
         let mut objects = HittableList::default();
+        /*   let emat = Arc::new(Lambertian::newp(Arc::new(ImageTexture::new(
+            &String::from("earthmap.jpg"),
+        )))); */
 
         let red = Arc::new(Lambertian::new(Color::new(0.65, 0.05, 0.05)));
         let white = Arc::new(Lambertian::new(Color::new(0.73, 0.73, 0.73)));
@@ -282,7 +295,17 @@ impl HittableList {
             555.0,
             white.clone(),
         )));
-        let box1 = Arc::new(Cube::new(
+
+        let trian = Arc::new(Triangle::new(
+            Point::new(50.0, 200.0, 250.0),
+            Point::new(500.0, 20.0, 280.0),
+            Point::new(33.0, 19.0, 294.0),
+            white,
+        ));
+        objects.add(trian);
+        /*  let rectan = Arc::new(XYRectangle::new(165.0, 330.0, 165.0, 330.0, 550.0, white));
+        objects.add(rectan); */
+        /*  let box1 = Arc::new(Cube::new(
             Point::new(0.0, 0.0, 0.0),
             Point::new(165.0, 330.0, 165.0),
             white,
@@ -290,11 +313,11 @@ impl HittableList {
         let box1 = Arc::new(RotateY::new(box1, 15.0));
         let box1 = Arc::new(Translate::new(box1, Vec3::new(265.0, 0.0, 295.0)));
 
-        objects.add(box1);
+        objects.add(box1); */
 
-        let glass = Arc::new(Dielectric::new(1.5));
+        /*   let glass = Arc::new(Dielectric::new(1.5));
         let ball = Arc::new(Sphere::new(Point::new(190.0, 90.0, 190.0), 90.0, glass));
-        objects.add(ball);
+        objects.add(ball); */
 
         objects
     }

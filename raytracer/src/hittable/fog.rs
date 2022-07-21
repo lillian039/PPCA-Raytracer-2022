@@ -28,7 +28,8 @@ impl Material for Isotropic {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord, srec: &mut ScatterRecord) -> bool {
         srec.specular_ray = Ray::new(rec.p, Vec3::random_in_unit_sphere(), r_in.time);
         srec.attenuation = self.albedo.as_ref().unwrap().value(rec.u, rec.v, &rec.p);
-        srec.is_specular = false;
+        srec.is_specular = true;
+
         true
     }
 }

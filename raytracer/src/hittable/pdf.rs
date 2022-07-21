@@ -94,11 +94,6 @@ impl PDF for MixturePDF {
     }
 
     fn value(&self, direction: &Vec3) -> f64 {
-        /* println!(
-            "p[0]: {} p[1]: {}",
-            self.p[0].as_ref().unwrap().value(direction),
-            self.p[1].as_ref().unwrap().value(direction)
-        ); */
         self.p[0].as_ref().unwrap().value(direction) * 0.5
             + self.p[1].as_ref().unwrap().value(direction) * 0.5
     }
