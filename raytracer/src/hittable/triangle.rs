@@ -1,6 +1,7 @@
 use super::super::basic_tools;
 use super::super::material::metal::Material;
 use super::aabb::AABB;
+use super::hittable_list::HittableList;
 use super::hittable_origin::{HitRecord, Hittable};
 use basic_tools::{ray::Ray, vec3::Point, vec3::Vec3};
 use std::sync::Arc;
@@ -14,8 +15,21 @@ pub struct Triangle {
     pub c1: f64,
     pub d1: f64,
     pub mp: Option<Arc<dyn Material>>,
+    pub minimum: Point,
+    pub maximum: Point,
 }
 
+fn min_three(x: f64, y: f64, z: f64) -> f64 {
+    let mut min_three = f64::min(x, y);
+    min_three = min_three.min(z);
+    min_three
+}
+
+fn max_three(x: f64, y: f64, z: f64) -> f64 {
+    let mut max_three = f64::max(x, y);
+    max_three = max_three.max(z);
+    max_three
+}
 impl Triangle {
     pub fn new(a: Point, b: Point, c: Point, mat: Arc<dyn Material>) -> Self {
         let fa = (b.y - a.y) * (c.z - a.z) - (c.y - a.y) * (b.z - a.z);
@@ -23,6 +37,13 @@ impl Triangle {
         let fc = (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y);
         let fd = -(fa * a.x + fb * a.y + fc * a.z);
         //    println!("a: {} b:{} c:{} d:{} ", fa, fb, fc, fd);
+        let xmin = min_three(a.x, b.x, c.x);
+        let ymin = min_three(a.y, b.y, c.y);
+        let zmin = min_three(a.z, b.z, c.z);
+
+        let xmax = max_three(a.x, b.x, c.x);
+        let ymax = max_three(a.y, b.y, c.y);
+        let zmax = max_three(a.z, b.z, c.z);
 
         Self {
             a: (a),
@@ -33,26 +54,15 @@ impl Triangle {
             c1: fc,
             d1: fd,
             mp: (Some(mat)),
+            minimum: Point::new(xmin, ymin, zmin),
+            maximum: Point::new(xmax, ymax, zmax),
         }
     }
 }
 
 impl Hittable for Triangle {
     fn bounding_box(&self, _time0: f64, _time1: f64, output_box: &mut AABB) -> bool {
-        let mut xmin = f64::min(self.a.x, self.b.x);
-        xmin = xmin.min(self.c.x);
-        let mut ymin = f64::min(self.a.y, self.b.y);
-        ymin = ymin.min(self.c.y);
-        let mut zmin = f64::min(self.a.z, self.b.z);
-        zmin = zmin.min(self.c.z);
-
-        let mut xmax = f64::max(self.a.x, self.b.x);
-        xmax = xmax.max(self.c.x);
-        let mut ymax = f64::max(self.a.y, self.b.y);
-        ymax = ymax.max(self.c.y);
-        let mut zmax = f64::max(self.a.z, self.b.z);
-        zmax = zmax.max(self.c.z);
-        *output_box = AABB::new(Point::new(xmin, ymin, zmin), Point::new(xmax, ymax, zmax));
+        *output_box = AABB::new(self.minimum, self.maximum);
         true
     }
 
@@ -90,5 +100,28 @@ impl Hittable for Triangle {
         rec.p = r.at(t);
         rec.mat_ptr = self.mp.clone();
         true
+    }
+}
+
+pub struct Object {
+    pub surface: HittableList,
+}
+
+impl Object {
+    pub fn new(surfaces: &HittableList) -> Self {
+        Self {
+            surface: (surfaces.clone()),
+        }
+    }
+}
+
+impl Hittable for Object {
+    fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut AABB) -> bool {
+        self.surface.bounding_box(time0, time1, output_box);
+        true
+    }
+
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+        self.surface.hit(r, t_min, t_max, rec)
     }
 }

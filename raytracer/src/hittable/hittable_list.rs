@@ -41,6 +41,58 @@ impl HittableList {
             objects: (Vec::new()),
         }
     }
+
+    pub fn planets() -> HittableList {
+        let mut objects = HittableList::default();
+
+        /* let light = Arc::new(DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 10.0));
+        objects.add(Arc::new(Sphere::new(
+            Point::new(0.0, 10.0, 0.0),
+            10.0,
+            light,
+        ))); */
+        let glass_mat = Arc::new(Dielectric::new(1.5));
+        let boundary = Arc::new(Sphere::new(Point::new(0.0, 0.0, 0.0), 5000.0, glass_mat));
+        let smoke_ball = Arc::new(ConstantMedium::new_col(
+            boundary,
+            0.0001,
+            Color::new(1.0, 1.0, 1.0),
+        ));
+        objects.add(smoke_ball);
+
+        /*      let light = Arc::new(DiffuseLight::new_col(Color::new(7.0, 7.0, 7.0)));
+        objects.add(Arc::new(XZRectangle::new(
+            100.0, -100.0, 100.0, -100.0, 200.0, light,
+        ))); */
+
+        let emat = Arc::new(DiffuseLight::new(
+            Arc::new(ImageTexture::new(&String::from("earthmap.jpg"))),
+            1.2,
+        ));
+        let earth = Arc::new(Sphere::new(Point::new(200.0, 100.0, 0.0), 70.0, emat));
+        objects.add(earth);
+        let mermat = Arc::new(DiffuseLight::new(
+            Arc::new(ImageTexture::new(&String::from("mercury.jpg"))),
+            1.2,
+        ));
+        let mercury = Arc::new(Sphere::new(Point::new(-150.0, 129.0, 0.0), 70.0, mermat));
+        objects.add(mercury);
+        let marsmat = Arc::new(DiffuseLight::new(
+            Arc::new(ImageTexture::new(&String::from("Mars.jpg"))),
+            1.2,
+        ));
+        let mars = Arc::new(Sphere::new(Point::new(-25.0, 88.0, 0.0), 50.0, marsmat));
+        objects.add(mars);
+        let metal_mat = Arc::new(Metal::new(Color::new(1.0, 1.0, 1.0), 0.0));
+        let ground = Arc::new(Sphere::new(
+            Point::new(0.0, -10000.0, 0.0),
+            10000.0,
+            metal_mat,
+        ));
+        objects.add(ground);
+
+        objects
+    }
     pub fn final_scence() -> HittableList {
         let mut boxes1 = HittableList::default();
         let ground = Arc::new(Lambertian::new(Color::new(0.48, 0.83, 0.53)));
@@ -73,7 +125,7 @@ impl HittableList {
             1.0,
         )));
 
-        let light = Arc::new(DiffuseLight::new_col(Color::new(7.0, 7.0, 7.0)));
+        let light = Arc::new(DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 7.0));
         let lamp = Arc::new(XZRectangle::new(123.0, 423.0, 147.0, 412.0, 554.0, light));
         objects.add(Arc::new(FlipFace::new(lamp)));
 
@@ -126,9 +178,10 @@ impl HittableList {
         objects.add(smoke_ball);
 
         //=== earth ===
-        let emat = Arc::new(Lambertian::newp(Arc::new(ImageTexture::new(
-            &String::from("earthmap.jpg"),
-        ))));
+        let emat = Arc::new(DiffuseLight::new(
+            Arc::new(ImageTexture::new(&String::from("earthmap.jpg"))),
+            5.0,
+        ));
         let earth = Arc::new(Sphere::new(Point::new(400.0, 200.0, 400.0), 100.0, emat));
         objects.add(earth);
 
@@ -142,7 +195,7 @@ impl HittableList {
         objects.add(perball);
 
         //=== boxes contain many boxes
-        let mut boxes2 = HittableList::default();
+        /*  let mut boxes2 = HittableList::default();
         let white = Arc::new(Lambertian::new(Color::new(0.73, 0.73, 0.73)));
         let ns = 1000;
         for _j in 0..ns {
@@ -161,73 +214,14 @@ impl HittableList {
         ));
         let many_balls = Arc::new(RotateY::new(many_balls, 15.0));
         let many_balls = Arc::new(Translate::new(many_balls, Vec3::new(-100.0, 270.0, 395.0)));
-        objects.add(many_balls);
+        objects.add(many_balls); */
 
         objects
-    }
-
-    pub fn planets() -> HittableList {
-        let mut objects = HittableList::default();
-
-        let light = Arc::new(DiffuseLight::new_col(Color::new(10.0, 10.0, 10.0)));
-        objects.add(Arc::new(Sphere::new(
-            Point::new(0.0, 10.0, 0.0),
-            10.0,
-            light,
-        )));
-        let glass_mat = Arc::new(Dielectric::new(1.5));
-        let boundary = Arc::new(Sphere::new(Point::new(0.0, 0.0, 0.0), 5000.0, glass_mat));
-        let smoke_ball = Arc::new(ConstantMedium::new_col(
-            boundary,
-            0.0001,
-            Color::new(1.0, 1.0, 1.0),
-        ));
-        objects.add(smoke_ball);
-
-        let light = Arc::new(DiffuseLight::new_col(Color::new(7.0, 7.0, 7.0)));
-        objects.add(Arc::new(XZRectangle::new(
-            100.0, -100.0, 100.0, -100.0, 200.0, light,
-        )));
-
-        let emat = Arc::new(Lambertian::newp(Arc::new(ImageTexture::new(
-            &String::from("earthmap.jpg"),
-        ))));
-        let earth = Arc::new(Sphere::new(Point::new(200.0, 100.0, 0.0), 70.0, emat));
-        objects.add(earth);
-        let mermat = Arc::new(Lambertian::newp(Arc::new(ImageTexture::new(
-            &String::from("mercury.jpg"),
-        ))));
-        let mercury = Arc::new(Sphere::new(Point::new(-150.0, 129.0, 0.0), 70.0, mermat));
-        objects.add(mercury);
-        let marsmat = Arc::new(Lambertian::newp(Arc::new(ImageTexture::new(
-            &String::from("Mars.jpg"),
-        ))));
-        let mars = Arc::new(Sphere::new(Point::new(-25.0, 88.0, 0.0), 50.0, marsmat));
-        objects.add(mars);
-        let metal_mat = Arc::new(Metal::new(Color::new(1.0, 1.0, 1.0), 0.0));
-        let ground = Arc::new(Sphere::new(
-            Point::new(0.0, -10000.0, 0.0),
-            10000.0,
-            metal_mat,
-        ));
-        objects.add(ground);
-
-        objects
-    }
-
-    pub fn earth() -> HittableList {
-        let earth_texture = Arc::new(ImageTexture::new(&String::from("mercury.jpg")));
-        let earth_surface = Arc::new(Lambertian::newp(earth_texture));
-        let globe = Arc::new(Sphere::new(Point::new(0.0, 0.0, 0.0), 2.0, earth_surface));
-
-        let mut world = HittableList::default();
-        world.add(globe);
-        world
     }
 
     pub fn lights() -> HittableList {
         let mut lights = HittableList::default();
-        let light = Arc::new(DiffuseLight::new_col(Color::new(15.0, 15.0, 15.0)));
+        let light = Arc::new(DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 15.0));
         let lamp = Arc::new(XZRectangle::new(213.0, 343.0, 227.0, 332.0, 554.0, light));
         lights.add(lamp);
         /*   let ball = Arc::new(Sphere::new(Point::new(190.0, 90.0, 190.0), 90.0, light));
@@ -237,7 +231,7 @@ impl HittableList {
 
     pub fn lights_final_scence() -> HittableList {
         let mut lights = HittableList::default();
-        let light = Arc::new(DiffuseLight::new_col(Color::new(7.0, 7.0, 7.0)));
+        let light = Arc::new(DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 7.0));
         let lamp = Arc::new(XZRectangle::new(
             123.0,
             423.0,
@@ -263,7 +257,7 @@ impl HittableList {
         let red = Arc::new(Lambertian::new(Color::new(0.65, 0.05, 0.05)));
         let white = Arc::new(Lambertian::new(Color::new(0.73, 0.73, 0.73)));
         let green = Arc::new(Lambertian::new(Color::new(0.12, 0.45, 0.15)));
-        let light = Arc::new(DiffuseLight::new_col(Color::new(15.0, 15.0, 15.0)));
+        let light = Arc::new(DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 15.0));
 
         objects.add(Arc::new(YZRectangle::new(
             0.0, 555.0, 0.0, 555.0, 555.0, green,
@@ -296,13 +290,26 @@ impl HittableList {
             white.clone(),
         )));
 
-        let trian = Arc::new(Triangle::new(
+        let p1 = Point::new(120.0, 0.0, 250.0);
+        let p2 = Point::new(500.0, 0.0, 280.0);
+        let p3 = Point::new(33.0, 0.0, 294.0);
+        let p4 = Point::new(250.0, 300.0, 200.0);
+
+        /*  let trian = Arc::new(Triangle::new(
             Point::new(50.0, 200.0, 250.0),
             Point::new(500.0, 20.0, 280.0),
             Point::new(33.0, 19.0, 294.0),
-            white,
+            white.clone(),
         ));
-        objects.add(trian);
+        objects.add(trian); */
+
+        let trian1 = Arc::new(Triangle::new(p1, p2, p4, white.clone()));
+        let trian2 = Arc::new(Triangle::new(p3, p2, p4, white.clone()));
+        let trian3 = Arc::new(Triangle::new(p1, p3, p4, white));
+        objects.add(trian1);
+        objects.add(trian2);
+        objects.add(trian3);
+
         /*  let rectan = Arc::new(XYRectangle::new(165.0, 330.0, 165.0, 330.0, 550.0, white));
         objects.add(rectan); */
         /*  let box1 = Arc::new(Cube::new(
