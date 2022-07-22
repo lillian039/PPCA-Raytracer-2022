@@ -108,10 +108,16 @@ pub struct Object {
 }
 
 impl Object {
-    pub fn new(surfaces: &HittableList) -> Self {
+    pub fn new_hittable(surfaces: &HittableList) -> Self {
         Self {
             surface: (surfaces.clone()),
         }
+    }
+
+    pub fn new(filename:&String)->Self{
+        let cornell_box = tobj::load_obj(filename, true);
+        assert!(cornell_box.is_ok());
+        let (models, materials) = cornell_box.unwrap();
     }
 }
 

@@ -102,8 +102,8 @@ impl ImageTexture {
 
         let width = image.width();
         let height = image.height();
-      //  println!("width:{}", width);
-      //  println!("hight:{}", height);
+        //  println!("width:{}", width);
+        //  println!("hight:{}", height);
 
         let mut dat = Vec::new();
         for i in (0..height).rev() {
