@@ -9,14 +9,17 @@ use super::super::basic_tools::{
 use super::super::hittable::{hittable_origin::HitRecord, pdf::CosinePDF};
 use super::metal::{Material, ScatterRecord};
 
-pub struct Lambertian {
-    pub albedo: Option<Arc<dyn Texture>>, //反射率
+pub struct Lambertian<T>
+where
+    T: Texture,
+{
+    pub albedo: T, //反射率
 }
 
-impl Material for Lambertian {
+impl<T: Texture> Material for Lambertian<T> {
     fn scatter(&self, _r_in: &Ray, rec: &HitRecord, srec: &mut ScatterRecord) -> bool {
         srec.is_specular = false;
-        srec.attenuation = self.albedo.as_ref().unwrap().value(rec.u, rec.v, &rec.p);
+        srec.attenuation = self.albedo.value(rec.u, rec.v, &rec.p);
         srec.pdf_ptr = Some(Arc::new(CosinePDF::new(rec.normal)));
         true
     }
@@ -28,13 +31,15 @@ impl Material for Lambertian {
     }
 }
 
-impl Lambertian {
+impl Lambertian<SolidColor> {
     pub fn new(a: Color) -> Self {
         Self {
-            albedo: Some(Arc::new(SolidColor::new(&a))),
+            albedo: SolidColor::new(&a),
         }
     }
-    pub fn newp(a: Arc<dyn Texture>) -> Self {
-        Self { albedo: (Some(a)) }
+}
+impl<T: Texture> Lambertian<T> {
+    pub fn newp(a: T) -> Self {
+        Self { albedo: (a) }
     }
 }

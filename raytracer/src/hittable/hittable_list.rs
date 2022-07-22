@@ -128,15 +128,17 @@ impl HittableList {
         objects.add(smoke_ball);
 
         //=== earth ===
-        let emat = Arc::new(DiffuseLight::new(
-            Arc::new(ImageTexture::new(&String::from("earthmap.jpg"))),
-            5.0,
+        let imagetx = ImageTexture::new(&String::from("earthmap.jpg"));
+        let emat = DiffuseLight::new(imagetx, 1.0);
+        let earth = Arc::new(Sphere::new(
+            Point::new(400.0, 200.0, 400.0),
+            100.0,
+            Arc::new(emat),
         ));
-        let earth = Arc::new(Sphere::new(Point::new(400.0, 200.0, 400.0), 100.0, emat));
         objects.add(earth);
 
         //=== noise box ===
-        let pertext = Arc::new(NoiseTexture::new(0.1));
+        let pertext = NoiseTexture::new(0.1);
         let perball = Arc::new(Sphere::new(
             Point::new(220.0, 280.0, 300.0),
             80.0,
@@ -261,10 +263,10 @@ impl HittableList {
         trian.add(trian2);
         trian.add(trian3);
 
-        let pre = Arc::new(Object::new(&trian));
-        let rota = Arc::new(RotateY::new(pre, 0.0));
+        //  let pre = Arc::new(Object::new(&trian));
+        //  let rota = Arc::new(RotateY::new(pre, 0.0));
 
-        objects.add(rota);
+        // objects.add(rota);
 
         /*  let rectan = Arc::new(XYRectangle::new(165.0, 330.0, 165.0, 330.0, 550.0, white));
         objects.add(rectan); */

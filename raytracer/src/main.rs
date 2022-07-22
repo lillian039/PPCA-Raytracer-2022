@@ -7,9 +7,9 @@ use std::{
 };
 
 use console::style;
-use tobj;
 use image::{ImageBuffer, RgbImage};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
+use tobj;
 pub mod basic_tools;
 pub mod hittable;
 pub mod material;
@@ -81,13 +81,13 @@ fn main() {
     let height = 500;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/try6_3.jpg";
+    let path = "output/try7_1.jpg";
     let samples_per_pixel = 100;
     let max_depth = 50;
 
-    let camera = Camera::cornell_box();
-    let world = HittableList::cornell_box();
-    let lamp = Arc::new(HittableList::lights());
+    let camera = Camera::final_scence();
+    let world = HittableList::final_scence();
+    let lamp = Arc::new(HittableList::lights_final_scence());
 
     let bvhworld = BVHNode::new(world.objects.clone(), 0, world.objects.len(), 0.0, 1.0);
 

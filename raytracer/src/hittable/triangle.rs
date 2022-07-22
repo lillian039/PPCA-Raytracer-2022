@@ -114,11 +114,11 @@ impl Object {
         }
     }
 
-    pub fn new(filename:&String)->Self{
+    /*  pub fn new(filename:&String)->Self{
         let cornell_box = tobj::load_obj(filename, true);
         assert!(cornell_box.is_ok());
         let (models, materials) = cornell_box.unwrap();
-    }
+    } */
 }
 
 impl Hittable for Object {
