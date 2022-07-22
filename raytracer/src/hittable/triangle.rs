@@ -4,7 +4,7 @@ use super::aabb::AABB;
 use super::hittable_list::HittableList;
 use super::hittable_origin::{HitRecord, Hittable};
 use basic_tools::{ray::Ray, vec3::Point, vec3::Vec3};
-
+use std::sync::Arc;
 pub struct Triangle<M>
 where
     M: Material,
@@ -116,11 +116,47 @@ impl Object {
         }
     }
 
-    /*  pub fn new(filename:&String)->Self{
-        let cornell_box = tobj::load_obj(filename, true);
+    pub fn new<M>(filename: &String, mat: M, scale: f64) -> Self
+    where
+        M: Material + Clone + 'static,
+    {
+        print!("?");
+        let mut points = Vec::default();
+        let pathname = String::from("obj/") + filename;
+        let cornell_box = tobj::load_obj(
+            pathname,
+            &tobj::LoadOptions {
+                single_index: true,
+                triangulate: true,
+                ..Default::default()
+            },
+        );
         assert!(cornell_box.is_ok());
-        let (models, materials) = cornell_box.unwrap();
-    } */
+        let (models, materials) = cornell_box.expect("Failed to load OBJ file");
+        println!("!");
+
+        let mut new_object = HittableList::default();
+        for (i, m) in models.iter().enumerate() {
+            let mesh = &m.mesh;
+            for v in 0..mesh.positions.len() / 3 {
+                let x = mesh.positions[3 * v] as f64 * scale;
+                let y = mesh.positions[3 * v + 1] as f64 * scale;
+                let z = mesh.positions[3 * v + 2] as f64 * scale;
+                let p = Point::new(x, y, z);
+                points.push(p);
+            }
+        }
+        for i in 0..points.len() / 3 {
+            let p1 = points[3 * i];
+            let p2 = points[3 * i + 1];
+            let p3 = points[3 * i + 2];
+            let trian = Triangle::new(p1, p2, p3, mat.clone());
+            new_object.add(Arc::new(trian));
+        }
+        Self {
+            surface: (new_object),
+        }
+    }
 }
 
 impl Hittable for Object {

@@ -17,7 +17,7 @@ use super::{
     moving_sphere::MovingSphere,
     sphere::Sphere,
     triangle::Triangle,
-    xy_rectangle::{Cube, FlipFace, RotateY, XYRectangle, XZRectangle, YZRectangle},
+    xy_rectangle::{Cube, FlipFace, RotateY, Translate, XYRectangle, XZRectangle, YZRectangle},
 };
 
 use crate::texture::text::{ImageTexture, NoiseTexture};
@@ -237,32 +237,20 @@ impl HittableList {
             555.0,
             white.clone(),
         )));
+        let aluminum = Metal::new(Vec3::new(0.8, 0.85, 0.88), 0.);
 
-        let p1 = Point::new(120.0, 0.0, 350.0);
-        let p2 = Point::new(500.0, 0.0, 380.0);
-        let p3 = Point::new(33.0, 0.0, 394.0);
-        let p4 = Point::new(250.0, 300.0, 300.0);
-
-        /*  let trian = Arc::new(Triangle::new(
-            Point::new(50.0, 200.0, 250.0),
-            Point::new(500.0, 20.0, 280.0),
-            Point::new(33.0, 19.0, 294.0),
-            white.clone(),
+        let obj = Arc::new(Object::new(&String::from("patrick.obj"), aluminum, 200.0));
+        let bvh_obj = Arc::new(BVHNode::new(
+            obj.surface.clone().objects,
+            0,
+            obj.surface.objects.len(),
+            0.0,
+            1.0,
         ));
-        objects.add(trian); */
-        let mut trian = HittableList::default();
+        let move_obj = Arc::new(RotateY::new(bvh_obj, 180.0));
+        let move_obj = Arc::new(Translate::new(move_obj, Vec3::new(200.0, 100.0, 300.0)));
 
-        let trian1 = Arc::new(Triangle::new(p1, p2, p4, white.clone()));
-        let trian2 = Arc::new(Triangle::new(p3, p2, p4, white.clone()));
-        let trian3 = Arc::new(Triangle::new(p1, p3, p4, white));
-        trian.add(trian1);
-        trian.add(trian2);
-        trian.add(trian3);
-
-        let pre = Arc::new(Object::new_hittable(&trian));
-        let rota = Arc::new(RotateY::new(pre, 0.0));
-
-        objects.add(rota);
+        objects.add(move_obj);
 
         /*  let rectan = Arc::new(XYRectangle::new(165.0, 330.0, 165.0, 330.0, 550.0, white));
         objects.add(rectan); */
