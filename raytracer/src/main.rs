@@ -25,6 +25,7 @@ use hittable::{
     pdf::{HittablePDF, MixturePDF, PDF},
 };
 use material::metal::ScatterRecord;
+use rand::{prelude::SliceRandom, thread_rng};
 fn ray_color(
     r: &Ray,
     background: Color,
@@ -80,13 +81,13 @@ fn main() {
     let height = 500;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/try7_1.jpg";
+    let path = "output/try6_4.jpg";
     let samples_per_pixel = 100;
     let max_depth = 50;
 
-    let camera = Camera::final_scence();
-    let world = HittableList::final_scence();
-    let lamp = Arc::new(HittableList::lights_final_scence());
+    let camera = Camera::cornell_box();
+    let world = HittableList::cornell_box();
+    let lamp = Arc::new(HittableList::lights());
 
     let bvhworld = BVHNode::new(world.objects.clone(), 0, world.objects.len(), 0.0, 1.0);
 
@@ -108,6 +109,14 @@ fn main() {
     let mut output_pixel = Vec::new();
     let hight_line = height / thread_total;
 
+    let mut random_pixal = Vec::default();
+    let sum = width * height;
+    for i in 0..sum {
+        random_pixal.push(i);
+    }
+    let mut rng = thread_rng();
+    random_pixal.shuffle(&mut rng);
+
     for thread_num in 0..thread_total {
         let hight_begin = hight_line * thread_num;
         let mut hight_end = hight_begin + hight_line;
@@ -119,6 +128,8 @@ fn main() {
         let camera_thread = camera;
         //let background_color = Color::new(0.7, 0.8, 1.0);
         let background_color = Color::new(0.0, 0.0, 0.0);
+
+        let t_random_pixel = random_pixal.clone();
 
         let mp = multiprogress.clone();
         let progress_bar = mp.add(ProgressBar::new(((hight_end - hight_begin) * width) as u64));
@@ -139,10 +150,15 @@ fn main() {
 
                 for y in hight_begin..hight_end {
                     for x in 0..width {
+                        let cnt = y * width + x;
+                        let map_cnt = t_random_pixel[cnt as usize];
+                        let x_map = map_cnt / width;
+                        let y_map = map_cnt % width;
+
                         let mut col = Vec3::new(0.0, 0.0, 0.0);
                         for _s in 0..samples_per_pixel {
-                            let u = (x as f64 + random_double()) / (width as f64);
-                            let v = (y as f64 + random_double()) / (height as f64);
+                            let u = (x_map as f64 + random_double()) / (width as f64);
+                            let v = (y_map as f64 + random_double()) / (height as f64);
                             let r = camera_thread.get_ray(u, v);
                             col += ray_color(
                                 &r,
@@ -206,7 +222,11 @@ fn main() {
     for y in 0..height {
         for x in 0..width {
             let pixel_color = output_pixel[pixel_num];
-            let pixel = img.get_pixel_mut(x, height - y - 1);
+            let cnt = y * width + x;
+            let map_cnt = random_pixal[cnt as usize];
+            let x_map = map_cnt / width;
+            let y_map = map_cnt % width;
+            let pixel = img.get_pixel_mut(x_map, height - y_map - 1);
             *pixel = image::Rgb(pixel_color);
             pixel_num += 1;
         }

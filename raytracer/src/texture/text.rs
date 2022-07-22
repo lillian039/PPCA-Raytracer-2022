@@ -1,7 +1,7 @@
 use super::perlin::Perlin;
 use crate::basic_tools::vec3::{Color, Point};
 use image::GenericImageView;
-use std::{path::Path};
+use std::path::Path;
 
 pub trait Texture: Send + Sync + Clone {
     fn value(&self, u: f64, v: f64, p: &Point) -> Color;
