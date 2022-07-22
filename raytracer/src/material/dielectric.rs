@@ -4,6 +4,8 @@ use super::super::basic_tools::{
 };
 use super::super::hittable::hittable_origin::random_double;
 use super::metal::{Material, ScatterRecord};
+
+#[derive(Clone)]
 pub struct Dielectric {
     pub ir: f64, //index of refrection
 }

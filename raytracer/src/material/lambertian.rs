@@ -9,6 +9,7 @@ use super::super::basic_tools::{
 use super::super::hittable::{hittable_origin::HitRecord, pdf::CosinePDF};
 use super::metal::{Material, ScatterRecord};
 
+#[derive(Clone)]
 pub struct Lambertian<T>
 where
     T: Texture,

@@ -62,6 +62,8 @@ impl ONB {
         self.axis[0] = Vec3::cross(self.w(), self.v());
     }
 }
+
+#[derive(Clone)]
 pub struct Metal {
     pub albebo: Color,
     pub fuzz: f64,

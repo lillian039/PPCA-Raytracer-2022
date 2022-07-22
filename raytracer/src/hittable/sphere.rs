@@ -5,33 +5,36 @@ use super::hittable_origin::{HitRecord, Hittable};
 use basic_tools::{ray::Ray, vec3::Point, vec3::Vec3};
 use std::f64::consts::PI;
 use std::f64::INFINITY;
-use std::sync::Arc;
 
 #[derive(Clone, Default)]
-pub struct Sphere {
+pub struct Sphere<M>
+where
+    M: Material,
+{
     pub center: Point,
     pub radius: f64,
-    pub mat_ptr: Option<Arc<dyn Material>>,
+    pub mat: M,
 }
 
-impl Sphere {
-    pub fn new(cen: Point, r: f64, mat_ptr: Arc<dyn Material>) -> Self {
+impl<M: Material> Sphere<M> {
+    pub fn new(cen: Point, r: f64, mat_ptr: M) -> Self {
         Self {
             center: (cen),
             radius: (r),
-            mat_ptr: Some(mat_ptr),
+            mat: mat_ptr,
         }
     }
-    pub fn get_sphere_uv(p: &Point, u: &mut f64, v: &mut f64) {
-        let theta = (-p.y).acos();
-        let phi = (-p.z).atan2(p.x) + PI;
-        *u = phi / (2.0 * PI);
-        *v = theta / PI;
-    }
+}
+
+pub fn get_sphere_uv(p: &Point, u: &mut f64, v: &mut f64) {
+    let theta = (-p.y).acos();
+    let phi = (-p.z).atan2(p.x) + PI;
+    *u = phi / (2.0 * PI);
+    *v = theta / PI;
 }
 //whether hit the shpere t is the time
-impl Hittable for Sphere {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+impl<M: Material> Hittable for Sphere<M> {
+    fn hit<'a>(&'a self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord<'a>) -> bool {
         let oc: Vec3 = r.point - self.center;
         let a = r.direct.length_squared();
         let half_b = Vec3::dot(&oc, &r.direct);
@@ -55,11 +58,11 @@ impl Hittable for Sphere {
             u: 1.0,
             v: 1.0,
             front_face: bool::default(),
-            mat_ptr: self.mat_ptr.clone(),
+            mat_ptr: Some(&self.mat),
         };
         let outward_normal = (rec.p - self.center) / self.radius;
         rec.set_face_normal(r, &outward_normal);
-        Sphere::get_sphere_uv(&outward_normal, &mut rec.u, &mut rec.v);
+        get_sphere_uv(&outward_normal, &mut rec.u, &mut rec.v);
         true
     }
 

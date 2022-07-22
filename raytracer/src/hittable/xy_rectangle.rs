@@ -10,8 +10,11 @@ use std::f64::INFINITY;
 use std::sync::Arc;
 
 #[derive(Clone, Default)]
-pub struct XYRectangle {
-    pub mp: Option<Arc<dyn Material>>,
+pub struct XYRectangle<M>
+where
+    M: Material,
+{
+    pub mp: M,
     pub x0: f64,
     pub x1: f64,
     pub y0: f64,
@@ -19,10 +22,10 @@ pub struct XYRectangle {
     pub k: f64,
 }
 
-impl XYRectangle {
-    pub fn new(_x0: f64, _x1: f64, _y0: f64, _y1: f64, _k: f64, mat: Arc<dyn Material>) -> Self {
+impl<M: Material> XYRectangle<M> {
+    pub fn new(_x0: f64, _x1: f64, _y0: f64, _y1: f64, _k: f64, mat: M) -> Self {
         Self {
-            mp: Some(mat),
+            mp: mat,
             x0: _x0,
             x1: _x1,
             y0: _y0,
@@ -32,7 +35,7 @@ impl XYRectangle {
     }
 }
 
-impl Hittable for XYRectangle {
+impl<M: Material> Hittable for XYRectangle<M> {
     fn bounding_box(&self, _time0: f64, _time1: f64, output_box: &mut AABB) -> bool {
         *output_box = AABB::new(
             Point::new(self.x0, self.y0, self.k - 0.0001),
@@ -41,7 +44,7 @@ impl Hittable for XYRectangle {
         true
     }
 
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+    fn hit<'a>(&'a self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord<'a>) -> bool {
         let t = (self.k - r.point.z) / r.direct.z;
         if t < t_min || t > t_max {
             return false;
@@ -56,25 +59,28 @@ impl Hittable for XYRectangle {
         rec.t = t;
         let outward_normal = Vec3::new(0.0, 0.0, 1.0);
         rec.set_face_normal(r, &outward_normal);
-        rec.mat_ptr = self.mp.clone();
+        rec.mat_ptr = Some(&self.mp);
         rec.p = r.at(t);
         true
     }
 }
 
 #[derive(Clone, Default)]
-pub struct XZRectangle {
-    pub mp: Option<Arc<dyn Material>>,
+pub struct XZRectangle<M>
+where
+    M: Material,
+{
+    pub mp: M,
     pub x0: f64,
     pub x1: f64,
     pub z0: f64,
     pub z1: f64,
     pub k: f64,
 }
-impl XZRectangle {
-    pub fn new(_x0: f64, _x1: f64, _z0: f64, _z1: f64, _k: f64, mat: Arc<dyn Material>) -> Self {
+impl<M: Material> XZRectangle<M> {
+    pub fn new(_x0: f64, _x1: f64, _z0: f64, _z1: f64, _k: f64, mat: M) -> Self {
         Self {
-            mp: Some(mat),
+            mp: mat,
             x0: _x0,
             x1: _x1,
             z0: _z0,
@@ -84,7 +90,7 @@ impl XZRectangle {
     }
 }
 
-impl Hittable for XZRectangle {
+impl<M: Material> Hittable for XZRectangle<M> {
     fn bounding_box(&self, _time0: f64, _time1: f64, output_box: &mut AABB) -> bool {
         *output_box = AABB::new(
             Point::new(self.x0, self.k - 0.0001, self.z0),
@@ -93,7 +99,7 @@ impl Hittable for XZRectangle {
         true
     }
 
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+    fn hit<'a>(&'a self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord<'a>) -> bool {
         let t = (self.k - r.point.y) / r.direct.y;
         if t < t_min || t > t_max {
             return false;
@@ -108,7 +114,7 @@ impl Hittable for XZRectangle {
         rec.t = t;
         let outward_normal = Vec3::new(0.0, 1.0, 0.0);
         rec.set_face_normal(r, &outward_normal);
-        rec.mat_ptr = self.mp.clone();
+        rec.mat_ptr = Some(&self.mp);
         rec.p = r.at(t);
         true
     }
@@ -137,18 +143,21 @@ impl Hittable for XZRectangle {
 }
 
 #[derive(Clone, Default)]
-pub struct YZRectangle {
-    pub mp: Option<Arc<dyn Material>>,
+pub struct YZRectangle<M>
+where
+    M: Material,
+{
+    pub mp: M,
     pub y0: f64,
     pub y1: f64,
     pub z0: f64,
     pub z1: f64,
     pub k: f64,
 }
-impl YZRectangle {
-    pub fn new(_y0: f64, _y1: f64, _z0: f64, _z1: f64, _k: f64, mat: Arc<dyn Material>) -> Self {
+impl<M: Material> YZRectangle<M> {
+    pub fn new(_y0: f64, _y1: f64, _z0: f64, _z1: f64, _k: f64, mat: M) -> Self {
         Self {
-            mp: Some(mat),
+            mp: mat,
             y0: _y0,
             y1: _y1,
             z0: _z0,
@@ -157,7 +166,7 @@ impl YZRectangle {
         }
     }
 }
-impl Hittable for YZRectangle {
+impl<M: Material> Hittable for YZRectangle<M> {
     fn bounding_box(&self, _time0: f64, _time1: f64, output_box: &mut AABB) -> bool {
         *output_box = AABB::new(
             Point::new(self.k - 0.0001, self.y0, self.z0),
@@ -166,7 +175,7 @@ impl Hittable for YZRectangle {
         true
     }
 
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+    fn hit<'a>(&'a self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord<'a>) -> bool {
         let t = (self.k - r.point.x) / r.direct.x;
         if t < t_min || t > t_max {
             return false;
@@ -181,7 +190,7 @@ impl Hittable for YZRectangle {
         rec.t = t;
         let outward_normal = Vec3::new(1.0, 0.0, 0.0);
         rec.set_face_normal(r, &outward_normal);
-        rec.mat_ptr = self.mp.clone();
+        rec.mat_ptr = Some(&self.mp);
         rec.p = r.at(t);
         true
     }
@@ -195,7 +204,10 @@ pub struct Cube {
 }
 
 impl Cube {
-    pub fn new(p0: Point, p1: Point, ptr: Arc<dyn Material>) -> Self {
+    pub fn new<M>(p0: Point, p1: Point, ptr: M) -> Self
+    where
+        M: Material + Clone + 'static,
+    {
         let mut slide = HittableList::default();
         slide.add(Arc::new(XYRectangle::new(
             p0.x,
@@ -238,12 +250,7 @@ impl Cube {
             ptr.clone(),
         )));
         slide.add(Arc::new(YZRectangle::new(
-            p0.y,
-            p1.y,
-            p0.z,
-            p1.z,
-            p0.x,
-            ptr.clone(),
+            p0.y, p1.y, p0.z, p1.z, p0.x, ptr,
         )));
         Self {
             box_min: (p0),
@@ -259,7 +266,7 @@ impl Hittable for Cube {
         true
     }
 
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+    fn hit<'a>(&'a self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord<'a>) -> bool {
         self.slides.hit(r, t_min, t_max, rec)
     }
 }
@@ -296,7 +303,7 @@ impl Hittable for Translate {
         true
     }
 
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+    fn hit<'a>(&'a self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord<'a>) -> bool {
         let moved_r = Ray::new(r.point - self.offset, r.direct, r.time);
         if !self.ptr.as_ref().unwrap().hit(&moved_r, t_min, t_max, rec) {
             return false;
@@ -367,7 +374,7 @@ impl Hittable for RotateY {
         self.has_box
     }
 
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+    fn hit<'a>(&'a self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord<'a>) -> bool {
         let mut origin = r.point;
         let mut direction = r.direct;
         origin.x = self.cos_theta * r.point.x - self.sin_theta * r.point.z;
@@ -420,7 +427,7 @@ impl Hittable for FlipFace {
             .bounding_box(time0, time1, output_box)
     }
 
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+    fn hit<'a>(&'a self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord<'a>) -> bool {
         if !self.ptr.as_ref().unwrap().hit(r, t_min, t_max, rec) {
             return false;
         }

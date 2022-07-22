@@ -4,9 +4,11 @@ use super::aabb::AABB;
 use super::hittable_list::HittableList;
 use super::hittable_origin::{HitRecord, Hittable};
 use basic_tools::{ray::Ray, vec3::Point, vec3::Vec3};
-use std::sync::Arc;
 
-pub struct Triangle {
+pub struct Triangle<M>
+where
+    M: Material,
+{
     pub a: Point,
     pub b: Point,
     pub c: Point,
@@ -14,7 +16,7 @@ pub struct Triangle {
     pub b1: f64,
     pub c1: f64,
     pub d1: f64,
-    pub mp: Option<Arc<dyn Material>>,
+    pub mp: M,
     pub minimum: Point,
     pub maximum: Point,
 }
@@ -30,8 +32,8 @@ fn max_three(x: f64, y: f64, z: f64) -> f64 {
     max_three = max_three.max(z);
     max_three
 }
-impl Triangle {
-    pub fn new(a: Point, b: Point, c: Point, mat: Arc<dyn Material>) -> Self {
+impl<M: Material> Triangle<M> {
+    pub fn new(a: Point, b: Point, c: Point, mat: M) -> Self {
         let fa = (b.y - a.y) * (c.z - a.z) - (c.y - a.y) * (b.z - a.z);
         let fb = (b.z - a.z) * (c.x - a.x) - (c.z - a.z) * (b.x - a.x);
         let fc = (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y);
@@ -53,20 +55,20 @@ impl Triangle {
             b1: fb,
             c1: fc,
             d1: fd,
-            mp: (Some(mat)),
+            mp: mat,
             minimum: Point::new(xmin, ymin, zmin),
             maximum: Point::new(xmax, ymax, zmax),
         }
     }
 }
 
-impl Hittable for Triangle {
+impl<M: Material> Hittable for Triangle<M> {
     fn bounding_box(&self, _time0: f64, _time1: f64, output_box: &mut AABB) -> bool {
         *output_box = AABB::new(self.minimum, self.maximum);
         true
     }
 
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+    fn hit<'a>(&'a self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord<'a>) -> bool {
         let k_right = -self.d1 - (self.a1 * r.point.x + self.b1 * r.point.y + self.c1 * r.point.z);
         let k_left = self.a1 * r.direct.x + self.b1 * r.direct.y + self.c1 * r.direct.z;
         let t = k_right / k_left;
@@ -98,7 +100,7 @@ impl Hittable for Triangle {
         rec.v = (a1 * c2 - a2 * c1) / (a1 * b2 - b1 * a2);
         rec.t = t;
         rec.p = r.at(t);
-        rec.mat_ptr = self.mp.clone();
+        rec.mat_ptr = Some(&self.mp);
         true
     }
 }
@@ -127,7 +129,7 @@ impl Hittable for Object {
         true
     }
 
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+    fn hit<'a>(&'a self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord<'a>) -> bool {
         self.surface.hit(r, t_min, t_max, rec)
     }
 }

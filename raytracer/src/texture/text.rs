@@ -1,9 +1,9 @@
 use super::perlin::Perlin;
 use crate::basic_tools::vec3::{Color, Point};
 use image::GenericImageView;
-use std::{path::Path, sync::Arc};
+use std::{path::Path};
 
-pub trait Texture: Send + Sync {
+pub trait Texture: Send + Sync + Clone {
     fn value(&self, u: f64, v: f64, p: &Point) -> Color;
 }
 
@@ -28,35 +28,39 @@ impl Texture for SolidColor {
 }
 
 #[derive(Default, Clone)]
-pub struct CheckerTexture {
+pub struct CheckerTexture<T>
+where
+    T: Texture,
+{
     //棋盘样式
-    pub odd: Option<Arc<dyn Texture>>,
-    pub even: Option<Arc<dyn Texture>>,
+    pub odd: T,
+    pub even: T,
 }
 
-impl CheckerTexture {
-    pub fn new(_even: Arc<dyn Texture>, _odd: Arc<dyn Texture>) -> Self {
+impl<T: Texture> CheckerTexture<T> {
+    pub fn new(_even: T, _odd: T) -> Self {
         Self {
-            odd: (Some(_odd)),
-            even: (Some(_even)),
+            odd: _odd,
+            even: _even,
         }
     }
-
+}
+impl CheckerTexture<SolidColor> {
     pub fn new_col(col1: &Color, col2: &Color) -> Self {
         Self {
-            odd: (Some(Arc::new(SolidColor::new(col1)))),
-            even: (Some(Arc::new(SolidColor::new(col2)))),
+            odd: SolidColor::new(col1),
+            even: SolidColor::new(col2),
         }
     }
 }
 
-impl Texture for CheckerTexture {
+impl<T: Texture> Texture for CheckerTexture<T> {
     fn value(&self, u: f64, v: f64, p: &Point) -> Color {
         let sines = (10.0 * p.x).sin() * (10.0 * p.y).sin() * (10.0 * p.z).sin();
         if sines < 0.0 {
-            return self.odd.as_ref().unwrap().value(u, v, p);
+            return self.odd.value(u, v, p);
         }
-        self.even.as_ref().unwrap().value(u, v, p)
+        self.even.value(u, v, p)
     }
 }
 

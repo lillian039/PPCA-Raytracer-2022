@@ -14,7 +14,7 @@ pub struct BVHNode {
 }
 
 impl Hittable for BVHNode {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+    fn hit<'a>(&'a self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord<'a>) -> bool {
         if !self.bounding_box.hit(r, t_min, t_max) {
             return false;
         }

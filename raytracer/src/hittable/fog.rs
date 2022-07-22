@@ -1,65 +1,44 @@
 use crate::texture::text::{SolidColor, Texture};
 
 use super::super::basic_tools;
-use super::super::material::metal::{Material, ScatterRecord};
+use super::super::material::isotropic::Isotropic;
 use super::aabb::AABB;
 use super::hittable_origin::{random_double, HitRecord, Hittable};
 use basic_tools::{ray::Ray, vec3::Color, vec3::Vec3};
 use std::f64::INFINITY;
 use std::sync::Arc;
-#[derive(Clone, Default)]
-pub struct Isotropic {
-    pub albedo: Option<Arc<dyn Texture>>,
-}
-
-impl Isotropic {
-    pub fn new(c: Color) -> Self {
-        Self {
-            albedo: (Some(Arc::new(SolidColor::new(&c)))),
-        }
-    }
-
-    pub fn new_p(a: Arc<dyn Texture>) -> Self {
-        Self { albedo: (Some(a)) }
-    }
-}
-
-impl Material for Isotropic {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord, srec: &mut ScatterRecord) -> bool {
-        srec.specular_ray = Ray::new(rec.p, Vec3::random_in_unit_sphere(), r_in.time);
-        srec.attenuation = self.albedo.as_ref().unwrap().value(rec.u, rec.v, &rec.p);
-        srec.is_specular = true;
-
-        true
-    }
-}
 
 #[derive(Clone, Default)]
-pub struct ConstantMedium {
+pub struct ConstantMedium<T>
+where
+    T: Texture,
+{
     pub boundary: Option<Arc<dyn Hittable>>,
-    pub phase_function: Option<Arc<dyn Material>>,
+    pub phase_function: Isotropic<T>,
     pub neg_inv_density: f64,
 }
 
-impl ConstantMedium {
-    pub fn new(b: Arc<dyn Hittable>, d: f64, a: Arc<dyn Texture>) -> Self {
+impl<T: Texture> ConstantMedium<T> {
+    pub fn new(b: Arc<dyn Hittable>, d: f64, a: T) -> Self {
         Self {
             boundary: (Some(b)),
-            phase_function: Some(Arc::new(Isotropic::new_p(a))),
-            neg_inv_density: (-1.0 / d),
-        }
-    }
-
-    pub fn new_col(b: Arc<dyn Hittable>, d: f64, c: Color) -> Self {
-        Self {
-            boundary: (Some(b)),
-            phase_function: Some(Arc::new(Isotropic::new(c))),
+            phase_function: Isotropic::new_p(a),
             neg_inv_density: (-1.0 / d),
         }
     }
 }
 
-impl Hittable for ConstantMedium {
+impl ConstantMedium<SolidColor> {
+    pub fn new_col(b: Arc<dyn Hittable>, d: f64, c: &Color) -> Self {
+        Self {
+            boundary: (Some(b)),
+            phase_function: Isotropic::new(*c),
+            neg_inv_density: (-1.0 / d),
+        }
+    }
+}
+
+impl<T: Texture> Hittable for ConstantMedium<T> {
     fn bounding_box(&self, time0: f64, time1: f64, output_box: &mut AABB) -> bool {
         self.boundary
             .as_ref()
@@ -67,7 +46,7 @@ impl Hittable for ConstantMedium {
             .bounding_box(time0, time1, output_box)
     }
 
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+    fn hit<'a>(&'a self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord<'a>) -> bool {
         let mut rec1 = HitRecord::default();
         let mut rec2 = HitRecord::default();
 
@@ -114,7 +93,7 @@ impl Hittable for ConstantMedium {
         rec.p = r.at(rec.t);
         rec.normal = Vec3::new(0.0, 0.0, 0.0);
         rec.front_face = true;
-        rec.mat_ptr = self.phase_function.clone();
+        rec.mat_ptr = Some(&self.phase_function);
 
         true
     }

@@ -9,7 +9,6 @@ use std::{
 use console::style;
 use image::{ImageBuffer, RgbImage};
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
-use tobj;
 pub mod basic_tools;
 pub mod hittable;
 pub mod material;

@@ -17,7 +17,7 @@ use super::{
     moving_sphere::MovingSphere,
     sphere::Sphere,
     triangle::Triangle,
-    xy_rectangle::{Cube, FlipFace, RotateY, Translate, XYRectangle, XZRectangle, YZRectangle},
+    xy_rectangle::{Cube, FlipFace, RotateY, XYRectangle, XZRectangle, YZRectangle},
 };
 
 use crate::texture::text::{ImageTexture, NoiseTexture};
@@ -45,7 +45,7 @@ impl HittableList {
 
     pub fn final_scence() -> HittableList {
         let mut boxes1 = HittableList::default();
-        let ground = Arc::new(Lambertian::new(Color::new(0.48, 0.83, 0.53)));
+        let ground = Lambertian::new(Color::new(0.48, 0.83, 0.53));
 
         let boxes_per_side = 20;
         for i in 0..boxes_per_side {
@@ -75,14 +75,14 @@ impl HittableList {
             1.0,
         )));
 
-        let light = Arc::new(DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 7.0));
-        let lamp = Arc::new(XZRectangle::new(123.0, 423.0, 147.0, 412.0, 554.0, light));
-        objects.add(Arc::new(FlipFace::new(lamp)));
+        let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 7.0);
+        let lamp = XZRectangle::new(123.0, 423.0, 147.0, 412.0, 554.0, light);
+        objects.add(Arc::new(FlipFace::new(Arc::new(lamp))));
 
         //=== moving sphere ====
         let center1 = Point::new(400.0, 400.0, 200.0);
         let center2 = center1 + Vec3::new(30.0, 0.0, 0.0);
-        let moving_sphere_material = Arc::new(Lambertian::new(Color::new(0.7, 0.3, 0.1)));
+        let moving_sphere_material = Lambertian::new(Color::new(0.7, 0.3, 0.1));
         objects.add(Arc::new(MovingSphere::new(
             center1,
             center2,
@@ -93,8 +93,8 @@ impl HittableList {
         )));
 
         //=== metal and glass ===
-        let glass_mat = Arc::new(Dielectric::new(1.5));
-        let metal_mat = Arc::new(Metal::new(Color::new(0.8, 0.8, 0.9), 1.0));
+        let glass_mat = Dielectric::new(1.5);
+        let metal_mat = Metal::new(Color::new(0.8, 0.8, 0.9), 1.0);
         objects.add(Arc::new(Sphere::new(
             Point::new(260.0, 150.0, 45.0),
             50.0,
@@ -116,25 +116,21 @@ impl HittableList {
         let smoke_ball = Arc::new(ConstantMedium::new_col(
             boundary,
             0.2,
-            Color::new(0.2, 0.4, 0.9),
+            &Color::new(0.2, 0.4, 0.9),
         ));
         objects.add(smoke_ball);
         let boundary = Arc::new(Sphere::new(Point::new(0.0, 0.0, 0.0), 5000.0, glass_mat));
         let smoke_ball = Arc::new(ConstantMedium::new_col(
             boundary,
             0.0001,
-            Color::new(1.0, 1.0, 1.0),
+            &Color::new(1.0, 1.0, 1.0),
         ));
         objects.add(smoke_ball);
 
         //=== earth ===
         let imagetx = ImageTexture::new(&String::from("earthmap.jpg"));
         let emat = DiffuseLight::new(imagetx, 1.0);
-        let earth = Arc::new(Sphere::new(
-            Point::new(400.0, 200.0, 400.0),
-            100.0,
-            Arc::new(emat),
-        ));
+        let earth = Arc::new(Sphere::new(Point::new(400.0, 200.0, 400.0), 100.0, emat));
         objects.add(earth);
 
         //=== noise box ===
@@ -142,7 +138,7 @@ impl HittableList {
         let perball = Arc::new(Sphere::new(
             Point::new(220.0, 280.0, 300.0),
             80.0,
-            Arc::new(Lambertian::newp(pertext)),
+            Lambertian::newp(pertext),
         ));
         objects.add(perball);
 
@@ -173,7 +169,7 @@ impl HittableList {
 
     pub fn lights() -> HittableList {
         let mut lights = HittableList::default();
-        let light = Arc::new(DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 15.0));
+        let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 15.0);
         let lamp = Arc::new(XZRectangle::new(213.0, 343.0, 227.0, 332.0, 554.0, light));
         lights.add(lamp);
         /*   let ball = Arc::new(Sphere::new(Point::new(190.0, 90.0, 190.0), 90.0, light));
@@ -183,7 +179,7 @@ impl HittableList {
 
     pub fn lights_final_scence() -> HittableList {
         let mut lights = HittableList::default();
-        let light = Arc::new(DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 7.0));
+        let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 7.0);
         let lamp = Arc::new(XZRectangle::new(
             123.0,
             423.0,
@@ -206,10 +202,10 @@ impl HittableList {
             &String::from("earthmap.jpg"),
         )))); */
 
-        let red = Arc::new(Lambertian::new(Color::new(0.65, 0.05, 0.05)));
-        let white = Arc::new(Lambertian::new(Color::new(0.73, 0.73, 0.73)));
-        let green = Arc::new(Lambertian::new(Color::new(0.12, 0.45, 0.15)));
-        let light = Arc::new(DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 15.0));
+        let red = Lambertian::new(Color::new(0.65, 0.05, 0.05));
+        let white = Lambertian::new(Color::new(0.73, 0.73, 0.73));
+        let green = Lambertian::new(Color::new(0.12, 0.45, 0.15));
+        let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 15.0);
 
         objects.add(Arc::new(YZRectangle::new(
             0.0, 555.0, 0.0, 555.0, 555.0, green,
@@ -263,10 +259,10 @@ impl HittableList {
         trian.add(trian2);
         trian.add(trian3);
 
-        //  let pre = Arc::new(Object::new(&trian));
-        //  let rota = Arc::new(RotateY::new(pre, 0.0));
+        let pre = Arc::new(Object::new_hittable(&trian));
+        let rota = Arc::new(RotateY::new(pre, 0.0));
 
-        // objects.add(rota);
+        objects.add(rota);
 
         /*  let rectan = Arc::new(XYRectangle::new(165.0, 330.0, 165.0, 330.0, 550.0, white));
         objects.add(rectan); */
@@ -289,7 +285,7 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
+    fn hit<'a>(&'a self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord<'a>) -> bool {
         let mut tmp_rec = HitRecord::default();
         let mut closest_so_far = t_max;
         let mut hit_anything = false;
