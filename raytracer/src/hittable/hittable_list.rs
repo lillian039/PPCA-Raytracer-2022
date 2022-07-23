@@ -16,7 +16,6 @@ use super::{
     hittable_origin::{random_t, HitRecord, Hittable},
     moving_sphere::MovingSphere,
     sphere::Sphere,
-    triangle::Triangle,
     xy_rectangle::{Cube, FlipFace, RotateY, Translate, XYRectangle, XZRectangle, YZRectangle},
 };
 
@@ -210,7 +209,14 @@ impl HittableList {
         objects.add(Arc::new(YZRectangle::new(
             0.0, 555.0, 0.0, 555.0, 555.0, green,
         )));
-        objects.add(Arc::new(YZRectangle::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
+        objects.add(Arc::new(YZRectangle::new(
+            0.0,
+            555.0,
+            0.0,
+            555.0,
+            0.0,
+            red,
+        )));
         let lamp = Arc::new(XZRectangle::new(213.0, 343.0, 227.0, 332.0, 554.0, light));
         objects.add(Arc::new(FlipFace::new(lamp)));
         objects.add(Arc::new(XZRectangle::new(
@@ -237,9 +243,13 @@ impl HittableList {
             555.0,
             white.clone(),
         )));
-        let aluminum = Metal::new(Vec3::new(0.8, 0.85, 0.88), 0.);
+        //  let aluminum = Metal::new(Vec3::new(0.8, 0.85, 0.88), 0.);
 
-        let obj = Arc::new(Object::new(&String::from("patrick.obj"), aluminum, 200.0));
+        /*       let obj = Arc::new(Object::new(
+            &String::from("stormCloud.obj"),
+            white.clone(),
+            1.0,
+        ));
         let bvh_obj = Arc::new(BVHNode::new(
             obj.surface.clone().objects,
             0,
@@ -250,8 +260,20 @@ impl HittableList {
         let move_obj = Arc::new(RotateY::new(bvh_obj, 180.0));
         let move_obj = Arc::new(Translate::new(move_obj, Vec3::new(200.0, 100.0, 300.0)));
 
-        objects.add(move_obj);
+        objects.add(move_obj); */
 
+        let obj = Arc::new(Object::new(&String::from("cloud.obj"), white, 1.0));
+        let bvh_obj = Arc::new(BVHNode::new(
+            obj.surface.clone().objects,
+            0,
+            obj.surface.objects.len(),
+            0.0,
+            1.0,
+        ));
+        let move_obj = Arc::new(RotateY::new(bvh_obj, 180.0));
+        let move_obj = Arc::new(Translate::new(move_obj, Vec3::new(300.0, 300.0, 300.0)));
+
+        objects.add(move_obj);
         /*  let rectan = Arc::new(XYRectangle::new(165.0, 330.0, 165.0, 330.0, 550.0, white));
         objects.add(rectan); */
         /*  let box1 = Arc::new(Cube::new(

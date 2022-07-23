@@ -120,24 +120,24 @@ impl Object {
     where
         M: Material + Clone + 'static,
     {
-        print!("?");
         let mut points = Vec::default();
         let pathname = String::from("obj/") + filename;
         let cornell_box = tobj::load_obj(
             pathname,
             &tobj::LoadOptions {
-                single_index: true,
+                single_index: false,
                 triangulate: true,
                 ..Default::default()
             },
         );
         assert!(cornell_box.is_ok());
-        let (models, materials) = cornell_box.expect("Failed to load OBJ file");
-        println!("!");
+        let (models, _materials) = cornell_box.expect("Failed to load OBJ file");
 
         let mut new_object = HittableList::default();
         for (i, m) in models.iter().enumerate() {
             let mesh = &m.mesh;
+            println!("total surface: {}", mesh.indices.len() / 3);
+            println!("model[{}].vertices: {}", i, mesh.positions.len() / 3);
             for v in 0..mesh.positions.len() / 3 {
                 let x = mesh.positions[3 * v] as f64 * scale;
                 let y = mesh.positions[3 * v + 1] as f64 * scale;
@@ -145,13 +145,13 @@ impl Object {
                 let p = Point::new(x, y, z);
                 points.push(p);
             }
-        }
-        for i in 0..points.len() / 3 {
-            let p1 = points[3 * i];
-            let p2 = points[3 * i + 1];
-            let p3 = points[3 * i + 2];
-            let trian = Triangle::new(p1, p2, p3, mat.clone());
-            new_object.add(Arc::new(trian));
+            for v in 0..mesh.indices.len() / 3 {
+                let p1 = points[mesh.indices[v * 3] as usize];
+                let p2 = points[mesh.indices[v * 3 + 1] as usize];
+                let p3 = points[mesh.indices[v * 3 + 2] as usize];
+                let trian = Triangle::new(p1, p2, p3, mat.clone());
+                new_object.add(Arc::new(trian));
+            }
         }
         Self {
             surface: (new_object),

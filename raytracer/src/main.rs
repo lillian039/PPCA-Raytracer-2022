@@ -81,7 +81,7 @@ fn main() {
     let height = 500;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/try6_4.jpg";
+    let path = "output/try6_13.jpg";
     let samples_per_pixel = 100;
     let max_depth = 50;
 
