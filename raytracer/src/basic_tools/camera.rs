@@ -2,7 +2,7 @@ use crate::hittable::hittable_origin::random_t;
 
 use super::{
     ray::Ray,
-    vec3::{Point, Vec3},
+    vec3::{Color, Point, Vec3},
 };
 
 #[derive(Clone, Copy)]
@@ -113,7 +113,7 @@ impl Camera {
             lookfrom,
             lookat,
             vup,
-            40.0,
+            50.0,
             aspect_ratio,
             aperture,
             dist_to_focus,
@@ -189,4 +189,9 @@ impl Camera {
             random_t(self.time0, self.time1),
         )
     }
+}
+
+pub fn get_background(_t: f64) -> Color {
+    //Color::new(1.0, 192.0 / 255.0, 203.0 / 255.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t
+    Color::new(0.0, 0.0, 0.0)
 }

@@ -14,7 +14,7 @@ pub mod hittable;
 pub mod material;
 pub mod texture;
 use basic_tools::{
-    camera::Camera,
+    camera::{get_background, Camera},
     ray::Ray,
     vec3::{Color, Vec3},
 };
@@ -26,19 +26,13 @@ use hittable::{
 };
 use material::metal::ScatterRecord;
 use rand::{prelude::SliceRandom, thread_rng};
-fn ray_color(
-    r: &Ray,
-    background: Color,
-    world: &dyn Hittable,
-    light: Arc<dyn Hittable>,
-    depth: i32,
-) -> Color {
+fn ray_color(r: &Ray, t: f64, world: &dyn Hittable, light: Arc<dyn Hittable>, depth: i32) -> Color {
     if depth <= 0 {
         return Color::new(0.0, 0.0, 0.0);
     }
     let mut rec = HitRecord::default();
     if !world.hit(r, 0.001, INFINITY, &mut rec) {
-        return background;
+        return get_background(t);
     }
     let mut srec = ScatterRecord::default();
     let emitted = rec
@@ -52,8 +46,7 @@ fn ray_color(
     }
 
     if srec.is_specular {
-        let a =
-            ray_color(&srec.specular_ray, background, world, light, depth - 1) * srec.attenuation;
+        let a = ray_color(&srec.specular_ray, t, world, light, depth - 1) * srec.attenuation;
         return a;
     }
     let light_ptr = Arc::new(HittablePDF::new(light.clone(), rec.p));
@@ -62,7 +55,7 @@ fn ray_color(
     let scattered = Ray::new(rec.p, p.generate(), r.time);
     let pdf = p.value(&scattered.direct);
     emitted
-        + ray_color(&scattered, background, world, light, depth - 1)
+        + ray_color(&scattered, t, world, light, depth - 1)
             * srec.attenuation
             * rec
                 .mat_ptr
@@ -78,11 +71,11 @@ fn main() {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char); // Set cursor position as 1,1
 
     let aspect_ratio = 1.0;
-    let height = 500;
+    let height = 800;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/try6_13.jpg";
-    let samples_per_pixel = 100;
+    let path = "output/try6_17.jpg";
+    let samples_per_pixel = 3000;
     let max_depth = 50;
 
     let camera = Camera::cornell_box();
@@ -127,7 +120,6 @@ fn main() {
         let world_thread = bvhworld.clone();
         let camera_thread = camera;
         //let background_color = Color::new(0.7, 0.8, 1.0);
-        let background_color = Color::new(0.0, 0.0, 0.0);
 
         let t_random_pixel = random_pixal.clone();
 
@@ -152,21 +144,15 @@ fn main() {
                     for x in 0..width {
                         let cnt = y * width + x;
                         let map_cnt = t_random_pixel[cnt as usize];
-                        let x_map = map_cnt / width;
-                        let y_map = map_cnt % width;
+                        let x_map = map_cnt % width;
+                        let y_map = map_cnt / width;
 
                         let mut col = Vec3::new(0.0, 0.0, 0.0);
                         for _s in 0..samples_per_pixel {
                             let u = (x_map as f64 + random_double()) / (width as f64);
                             let v = (y_map as f64 + random_double()) / (height as f64);
                             let r = camera_thread.get_ray(u, v);
-                            col += ray_color(
-                                &r,
-                                background_color,
-                                &world_thread,
-                                light.clone(),
-                                max_depth,
-                            );
+                            col += ray_color(&r, v, &world_thread, light.clone(), max_depth);
                         }
                         col = col / samples_per_pixel as f64;
                         let mut r = col.x;
@@ -224,8 +210,8 @@ fn main() {
             let pixel_color = output_pixel[pixel_num];
             let cnt = y * width + x;
             let map_cnt = random_pixal[cnt as usize];
-            let x_map = map_cnt / width;
-            let y_map = map_cnt % width;
+            let y_map = map_cnt / width;
+            let x_map = map_cnt % width;
             let pixel = img.get_pixel_mut(x_map, height - y_map - 1);
             *pixel = image::Rgb(pixel_color);
             pixel_num += 1;

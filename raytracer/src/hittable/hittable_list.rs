@@ -14,12 +14,11 @@ use super::{
     bvh::BVHNode,
     fog::ConstantMedium,
     hittable_origin::{random_t, HitRecord, Hittable},
-    moving_sphere::MovingSphere,
     sphere::Sphere,
     xy_rectangle::{Cube, FlipFace, RotateY, Translate, XYRectangle, XZRectangle, YZRectangle},
 };
 
-use crate::texture::text::{ImageTexture, NoiseTexture};
+use crate::texture::text::ImageTexture;
 use std::sync::Arc;
 
 #[derive(Clone, Default)]
@@ -42,9 +41,30 @@ impl HittableList {
         }
     }
 
-    pub fn final_scence() -> HittableList {
+    pub fn lights() -> HittableList {
+        let mut lights = HittableList::default();
+        let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 20.0);
+        let lamp = Arc::new(XZRectangle::new(
+            113.0,
+            443.0,
+            127.0,
+            432.0,
+            1299.0,
+            light.clone(),
+        ));
+        lights.add(lamp);
+        lights
+    }
+
+    pub fn cornell_box() -> HittableList {
+        let mut objects = HittableList::default();
+
+        let back = ImageTexture::new(&String::from("pinkblue.png"));
+        let pink = Lambertian::newp(back);
+        let white = Lambertian::new(Color::new(0.73, 0.73, 0.73));
+        let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 15.0);
         let mut boxes1 = HittableList::default();
-        let ground = Lambertian::new(Color::new(0.48, 0.83, 0.53));
+        let aluminum = Metal::new(Vec3::new(0.8, 0.85, 0.88), 0.);
 
         let boxes_per_side = 20;
         for i in 0..boxes_per_side {
@@ -52,7 +72,7 @@ impl HittableList {
                 let w = 100.0;
                 let x0 = -1000.0 + i as f64 * w;
                 let z0 = -1000.0 + j as f64 * w;
-                let y0 = 0.0;
+                let y0 = -20.0;
                 let x1 = x0 + w;
                 let y1 = random_t(1.0, 101.0);
                 let z1 = z0 + w;
@@ -60,12 +80,10 @@ impl HittableList {
                 boxes1.add(Arc::new(Cube::new(
                     Point::new(x0, y0, z0),
                     Point::new(x1, y1, z1),
-                    ground.clone(),
+                    aluminum.clone(),
                 )));
             }
         }
-
-        let mut objects = HittableList::default();
         objects.add(Arc::new(BVHNode::new(
             boxes1.objects.clone(),
             0,
@@ -74,182 +92,62 @@ impl HittableList {
             1.0,
         )));
 
-        let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 7.0);
-        let lamp = XZRectangle::new(123.0, 423.0, 147.0, 412.0, 554.0, light);
-        objects.add(Arc::new(FlipFace::new(Arc::new(lamp))));
+        let glass = Dielectric::new(1.5);
 
-        //=== moving sphere ====
-        let center1 = Point::new(400.0, 400.0, 200.0);
-        let center2 = center1 + Vec3::new(30.0, 0.0, 0.0);
-        let moving_sphere_material = Lambertian::new(Color::new(0.7, 0.3, 0.1));
-        objects.add(Arc::new(MovingSphere::new(
-            center1,
-            center2,
-            0.0,
-            1.0,
-            50.0,
-            moving_sphere_material,
-        )));
-
-        //=== metal and glass ===
-        let glass_mat = Dielectric::new(1.5);
-        let metal_mat = Metal::new(Color::new(0.8, 0.8, 0.9), 1.0);
-        objects.add(Arc::new(Sphere::new(
-            Point::new(260.0, 150.0, 45.0),
-            50.0,
-            glass_mat.clone(),
-        )));
-        objects.add(Arc::new(Sphere::new(
-            Point::new(0.0, 150.0, 145.0),
-            50.0,
-            metal_mat,
-        )));
-
-        //=== smoke ===
-        let boundary = Arc::new(Sphere::new(
-            Point::new(360.0, 150.0, 145.0),
-            70.0,
-            glass_mat.clone(),
+        let cloud = Arc::new(Object::new(
+            &String::from("obj/cloud.obj"),
+            glass.clone(),
+            0.6,
         ));
-        objects.add(boundary.clone());
-        let smoke_ball = Arc::new(ConstantMedium::new_col(
-            boundary,
-            0.2,
-            &Color::new(0.2, 0.4, 0.9),
-        ));
-        objects.add(smoke_ball);
-        let boundary = Arc::new(Sphere::new(Point::new(0.0, 0.0, 0.0), 5000.0, glass_mat));
-        let smoke_ball = Arc::new(ConstantMedium::new_col(
-            boundary,
-            0.0001,
-            &Color::new(1.0, 1.0, 1.0),
-        ));
-        objects.add(smoke_ball);
-
-        //=== earth ===
-        let imagetx = ImageTexture::new(&String::from("earthmap.jpg"));
-        let emat = DiffuseLight::new(imagetx, 1.0);
-        let earth = Arc::new(Sphere::new(Point::new(400.0, 200.0, 400.0), 100.0, emat));
-        objects.add(earth);
-
-        //=== noise box ===
-        let pertext = NoiseTexture::new(0.1);
-        let perball = Arc::new(Sphere::new(
-            Point::new(220.0, 280.0, 300.0),
-            80.0,
-            Lambertian::newp(pertext),
-        ));
-        objects.add(perball);
-
-        //=== boxes contain many boxes
-        /*  let mut boxes2 = HittableList::default();
-        let white = Arc::new(Lambertian::new(Color::new(0.73, 0.73, 0.73)));
-        let ns = 1000;
-        for _j in 0..ns {
-            boxes2.add(Arc::new(Sphere::new(
-                Point::random_range(0.0, 165.0),
-                10.0,
-                white.clone(),
-            )));
-        }
-        let many_balls = Arc::new(BVHNode::new(
-            boxes2.objects.clone(),
+        let cloud = Arc::new(BVHNode::new(
+            cloud.surface.clone().objects,
             0,
-            boxes2.objects.len(),
+            cloud.surface.objects.len(),
             0.0,
             1.0,
         ));
-        let many_balls = Arc::new(RotateY::new(many_balls, 15.0));
-        let many_balls = Arc::new(Translate::new(many_balls, Vec3::new(-100.0, 270.0, 395.0)));
-        objects.add(many_balls); */
 
-        objects
-    }
-
-    pub fn lights() -> HittableList {
-        let mut lights = HittableList::default();
-        let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 15.0);
-        let lamp = Arc::new(XZRectangle::new(213.0, 343.0, 227.0, 332.0, 554.0, light));
-        lights.add(lamp);
-        /*   let ball = Arc::new(Sphere::new(Point::new(190.0, 90.0, 190.0), 90.0, light));
-        lights.add(ball); */
-        lights
-    }
-
-    pub fn lights_final_scence() -> HittableList {
-        let mut lights = HittableList::default();
-        let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 7.0);
-        let lamp = Arc::new(XZRectangle::new(
-            123.0,
-            423.0,
-            147.0,
-            412.0,
-            554.0,
-            light.clone(),
+        let move_obj = Arc::new(Translate::new(
+            cloud.clone(),
+            Vec3::new(200.0, 300.0, 300.0),
         ));
-        lights.add(lamp);
-        lights.add(Arc::new(Sphere::new(
-            Point::new(260.0, 150.0, 45.0),
-            50.0,
-            light,
-        )));
-        lights
-    }
-    pub fn cornell_box() -> HittableList {
-        let mut objects = HittableList::default();
-        /*   let emat = Arc::new(Lambertian::newp(Arc::new(ImageTexture::new(
-            &String::from("earthmap.jpg"),
-        )))); */
+        objects.add(move_obj);
 
-        let red = Lambertian::new(Color::new(0.65, 0.05, 0.05));
-        let white = Lambertian::new(Color::new(0.73, 0.73, 0.73));
-        let green = Lambertian::new(Color::new(0.12, 0.45, 0.15));
-        let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 15.0);
+        let move_obj = Arc::new(Translate::new(cloud, Vec3::new(500.0, 600.0, 400.0)));
+        objects.add(move_obj);
 
         objects.add(Arc::new(YZRectangle::new(
-            0.0, 555.0, 0.0, 555.0, 555.0, green,
+            0.0,
+            1300.0,
+            -800.0,
+            1355.0,
+            1355.0,
+            pink.clone(),
         )));
         objects.add(Arc::new(YZRectangle::new(
             0.0,
-            555.0,
-            0.0,
-            555.0,
-            0.0,
-            red,
+            1300.0,
+            -800.0,
+            1355.0,
+            -800.0,
+            pink.clone(),
         )));
-        let lamp = Arc::new(XZRectangle::new(213.0, 343.0, 227.0, 332.0, 554.0, light));
+        let lamp = Arc::new(XZRectangle::new(113.0, 443.0, 127.0, 432.0, 1299.0, light));
         objects.add(Arc::new(FlipFace::new(lamp)));
+
         objects.add(Arc::new(XZRectangle::new(
-            0.0,
-            555.0,
-            0.0,
-            555.0,
-            0.0,
-            white.clone(),
-        )));
-        objects.add(Arc::new(XZRectangle::new(
-            0.0,
-            555.0,
-            0.0,
-            555.0,
-            555.0,
-            white.clone(),
+            -800.0,
+            1355.0,
+            -800.0,
+            1355.0,
+            1300.0,
+            pink.clone(),
         )));
         objects.add(Arc::new(XYRectangle::new(
-            0.0,
-            555.0,
-            0.0,
-            555.0,
-            555.0,
-            white.clone(),
+            -800.0, 1355.0, 0.0, 1300.0, 1355.0, pink,
         )));
-        //  let aluminum = Metal::new(Vec3::new(0.8, 0.85, 0.88), 0.);
 
-        /*       let obj = Arc::new(Object::new(
-            &String::from("stormCloud.obj"),
-            white.clone(),
-            1.0,
-        ));
+        let obj = Arc::new(Object::new(&String::from("obj/whale.obj"), white, 800.0));
         let bvh_obj = Arc::new(BVHNode::new(
             obj.surface.clone().objects,
             0,
@@ -258,37 +156,33 @@ impl HittableList {
             1.0,
         ));
         let move_obj = Arc::new(RotateY::new(bvh_obj, 180.0));
-        let move_obj = Arc::new(Translate::new(move_obj, Vec3::new(200.0, 100.0, 300.0)));
-
-        objects.add(move_obj); */
-
-        let obj = Arc::new(Object::new(&String::from("cloud.obj"), white, 1.0));
-        let bvh_obj = Arc::new(BVHNode::new(
-            obj.surface.clone().objects,
-            0,
-            obj.surface.objects.len(),
-            0.0,
-            1.0,
-        ));
-        let move_obj = Arc::new(RotateY::new(bvh_obj, 180.0));
-        let move_obj = Arc::new(Translate::new(move_obj, Vec3::new(300.0, 300.0, 300.0)));
+        let move_obj = Arc::new(Translate::new(move_obj, Vec3::new(300.0, 350.0, 400.0)));
 
         objects.add(move_obj);
-        /*  let rectan = Arc::new(XYRectangle::new(165.0, 330.0, 165.0, 330.0, 550.0, white));
-        objects.add(rectan); */
-        /*  let box1 = Arc::new(Cube::new(
-            Point::new(0.0, 0.0, 0.0),
-            Point::new(165.0, 330.0, 165.0),
-            white,
+
+        let emat = DiffuseLight::new(ImageTexture::new(&String::from("earthmap.jpg")), 1.0);
+        let earth = Arc::new(Sphere::new(Point::new(200.0, 150.0, 400.0), 50.0, emat));
+        objects.add(earth);
+        let mermat = DiffuseLight::new(ImageTexture::new(&String::from("mercury.jpg")), 1.2);
+        let mercury = Arc::new(Sphere::new(Point::new(360.0, 429.0, 500.0), 50.0, mermat));
+        objects.add(mercury);
+        let venusmat = DiffuseLight::new(ImageTexture::new(&String::from("venus.jpg")), 1.2);
+        let venus = Arc::new(Sphere::new(Point::new(250.0, 488.0, 250.0), 50.0, venusmat));
+        objects.add(venus);
+        let jupitermat = Lambertian::newp(ImageTexture::new(&String::from("Jupiter.jpg")));
+        let venus = Arc::new(Sphere::new(
+            Point::new(650.0, 358.0, 350.0),
+            70.0,
+            jupitermat,
         ));
-        let box1 = Arc::new(RotateY::new(box1, 15.0));
-        let box1 = Arc::new(Translate::new(box1, Vec3::new(265.0, 0.0, 295.0)));
-
-        objects.add(box1); */
-
-        /*   let glass = Arc::new(Dielectric::new(1.5));
-        let ball = Arc::new(Sphere::new(Point::new(190.0, 90.0, 190.0), 90.0, glass));
-        objects.add(ball); */
+        objects.add(venus);
+        let saturnmat = Lambertian::newp(ImageTexture::new(&String::from("Saturn.jpg")));
+        let venus = Arc::new(Sphere::new(
+            Point::new(-50.0, 288.0, 350.0),
+            60.0,
+            saturnmat,
+        ));
+        objects.add(venus);
 
         objects
     }

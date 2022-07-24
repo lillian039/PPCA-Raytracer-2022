@@ -116,7 +116,7 @@ impl Object {
         }
     }
 
-    pub fn new<M>(filename: &String, mat: M, scale: f64) -> Self
+    pub fn new_rectangle<M>(filename: &String, mat: M, scale: f64) -> Self
     where
         M: Material + Clone + 'static,
     {
@@ -124,6 +124,62 @@ impl Object {
         let pathname = String::from("obj/") + filename;
         let cornell_box = tobj::load_obj(
             pathname,
+            &tobj::LoadOptions {
+                single_index: false,
+                triangulate: false,
+                ..Default::default()
+            },
+        );
+        assert!(cornell_box.is_ok());
+        let (models, _materials) = cornell_box.expect("Failed to load OBJ file");
+
+        let mut new_object = HittableList::default();
+        for (i, m) in models.iter().enumerate() {
+            let mesh = &m.mesh;
+            println!("total surface: {}", mesh.indices.len() / 4);
+            println!("model[{}].vertices: {}", i, mesh.positions.len() / 3);
+            for v in 0..mesh.positions.len() / 3 {
+                let x = mesh.positions[3 * v] as f64 * scale;
+                let y = mesh.positions[3 * v + 1] as f64 * scale;
+                let z = mesh.positions[3 * v + 2] as f64 * scale;
+                let p = Point::new(x, y, z);
+
+                points.push(p);
+            }
+            for v in 0..mesh.indices.len() / 4 {
+                println!(
+                    "a:{} b:{} c:{} d:{} ",
+                    mesh.indices[v * 4],
+                    mesh.indices[v * 4 + 1],
+                    mesh.indices[v * 4 + 2],
+                    mesh.indices[v * 4 + 3]
+                );
+                let p1 = points[mesh.indices[v * 4] as usize];
+                let p2 = points[mesh.indices[v * 4 + 1] as usize];
+                let p3 = points[mesh.indices[v * 4 + 2] as usize];
+                let trian = Triangle::new(p1, p2, p3, mat.clone());
+                new_object.add(Arc::new(trian));
+
+                let p1 = points[mesh.indices[v * 4] as usize];
+                let p2 = points[mesh.indices[v * 4 + 2] as usize];
+                let p3 = points[mesh.indices[v * 4 + 3] as usize];
+                let trian = Triangle::new(p1, p2, p3, mat.clone());
+                new_object.add(Arc::new(trian));
+            }
+            points.clear();
+        }
+        Self {
+            surface: (new_object),
+        }
+    }
+
+    pub fn new<M>(filename: &String, mat: M, scale: f64) -> Self
+    where
+        M: Material + Clone + 'static,
+    {
+        let mut points = Vec::default();
+        let cornell_box = tobj::load_obj(
+            filename,
             &tobj::LoadOptions {
                 single_index: false,
                 triangulate: true,
@@ -152,6 +208,7 @@ impl Object {
                 let trian = Triangle::new(p1, p2, p3, mat.clone());
                 new_object.add(Arc::new(trian));
             }
+            points.clear();
         }
         Self {
             surface: (new_object),
