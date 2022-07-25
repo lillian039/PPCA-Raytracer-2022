@@ -1,7 +1,9 @@
 use super::super::material::{
     dielectric::Dielectric, diffuse_light::DiffuseLight, lambertian::Lambertian, metal::Metal,
+    mixmaterial::MixtureMaterial,
 };
 use super::aabb::AABB;
+use super::hittable_origin::random_double;
 use super::ring::Ring;
 use super::triangle::Object;
 use super::{
@@ -58,7 +60,7 @@ impl HittableList {
         let back = ImageTexture::new(&String::from("pinkblue.png"));
         let pink = Lambertian::newp(back);
         let white = Lambertian::new(Color::new(0.73, 0.73, 0.73));
-        let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 15.0);
+        let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 20.0);
         let mut boxes1 = HittableList::default();
         let aluminum = Metal::new(Vec3::new(0.8, 0.85, 0.88), 0.);
 
@@ -90,7 +92,11 @@ impl HittableList {
 
         let glass = Dielectric::new(1.5);
 
-        let cloud = Arc::new(Object::new(&String::from("obj/cloud.obj"), glass, 0.6));
+        let cloud = Arc::new(Object::new(
+            &String::from("obj/cloud.obj"),
+            glass.clone(),
+            0.6,
+        ));
         let cloud = Arc::new(BVHNode::new(
             cloud.surface.clone().objects,
             0,
@@ -99,10 +105,7 @@ impl HittableList {
             1.0,
         ));
 
-        let move_obj = Arc::new(Translate::new(
-            cloud.clone(),
-            Vec3::new(200.0, 300.0, 300.0),
-        ));
+        let move_obj = Arc::new(Translate::new(cloud.clone(), Vec3::new(0.0, 300.0, 300.0)));
         objects.add(move_obj);
 
         let move_obj = Arc::new(Translate::new(cloud, Vec3::new(500.0, 600.0, 400.0)));
@@ -139,6 +142,8 @@ impl HittableList {
             -800.0, 1355.0, 0.0, 1300.0, 1355.0, pink,
         )));
 
+        //let blue=Lambertian::new(Color::new(30.0/255.0, 144.0/255.0, 1.0));
+
         let obj = Arc::new(Object::new(&String::from("obj/whale.obj"), white, 800.0));
         let bvh_obj = Arc::new(BVHNode::new(
             obj.surface.clone().objects,
@@ -152,30 +157,101 @@ impl HittableList {
 
         objects.add(move_obj);
 
+        let center = Vec3::new(300.0, 300.0, 400.0);
+
+        let mut planets_ring = HittableList::default();
+
+        for _i in 0..200 {
+            let r = random_t(370.0, 470.0);
+            let theta = random_t(0.0, 360.0);
+            let high = random_t(0.0, 50.0) - 25.0;
+            let posi = Vec3::new(
+                center.x + theta.cos() * r,
+                center.y + high,
+                center.z + theta.sin() * r,
+            );
+            let rball = random_t(7.0, 12.0);
+            let choice = random_double();
+            if choice < 0.3 {
+                let mat = glass.clone();
+                let ball = Arc::new(Sphere::new(posi, rball, mat));
+                planets_ring.add(ball);
+            } else if choice < 0.7 {
+                let albedo = Color::random_range(0.7, 1.0);
+                let fuzz = random_t(0.0, 0.5);
+                let mat = Metal::new(albedo, fuzz);
+                let ball = Arc::new(Sphere::new(posi, rball, mat));
+                planets_ring.add(ball);
+            } else {
+                let col = Color::random_range(0.7, 1.0);
+                let mat = DiffuseLight::new_col(col, 0.7);
+                let ball = Arc::new(Sphere::new(posi, rball * 0.6, mat));
+                planets_ring.add(ball);
+            }
+        }
+
+        let planets_ring = Arc::new(BVHNode::new(
+            planets_ring.clone().objects,
+            0,
+            planets_ring.objects.len(),
+            0.0,
+            1.0,
+        ));
+
+        let planets_ring = Arc::new(RotateX::new(planets_ring, 20.0));
+
+        objects.add(planets_ring);
+
         let emat = DiffuseLight::new(ImageTexture::new(&String::from("earthmap.jpg")), 1.0);
-        let earth = Arc::new(Sphere::new(Point::new(200.0, 150.0, 400.0), 50.0, emat));
+        let earth = Arc::new(Sphere::new(Point::new(200.0, 350.0, 400.0), 50.0, emat));
         objects.add(earth);
+
         let mermat = DiffuseLight::new(ImageTexture::new(&String::from("mercury.jpg")), 1.2);
         let mercury = Arc::new(Sphere::new(Point::new(360.0, 429.0, 500.0), 50.0, mermat));
         objects.add(mercury);
+
         let venusmat = DiffuseLight::new(ImageTexture::new(&String::from("venus.jpg")), 1.2);
         let venus = Arc::new(Sphere::new(Point::new(250.0, 488.0, 250.0), 50.0, venusmat));
         objects.add(venus);
+
         let jupitermat = Lambertian::newp(ImageTexture::new(&String::from("Jupiter.jpg")));
-        let venus = Arc::new(Sphere::new(
-            Point::new(650.0, 358.0, 350.0),
+        let light2 = DiffuseLight::new(ImageTexture::new(&String::from("Jupiter.jpg")), 1.0);
+        let jupitermat = MixtureMaterial::new(jupitermat, light2, 0.95);
+        let jupiter = Arc::new(Sphere::new(
+            Point::new(600.0, 300.0, 450.0),
             70.0,
             jupitermat,
         ));
-        objects.add(venus);
+        let jupiter = Arc::new(RotateX::new(jupiter, 20.0));
+        objects.add(jupiter);
+
         let saturnmat = Lambertian::newp(ImageTexture::new(&String::from("Saturn.jpg")));
-        let venus = Arc::new(Sphere::new(
-            Point::new(-50.0, 288.0, 350.0),
+        let saturn = Arc::new(Sphere::new(
+            Point::new(-50.0, 350.0, 350.0),
             60.0,
             saturnmat,
         ));
-        objects.add(venus);
-
+        let saturn = Arc::new(RotateX::new(saturn, 20.0));
+        objects.add(saturn);
+        let light =
+            DiffuseLight::new_col(Color::new(245.0 / 255.0, 222.0 / 255.0, 179.0 / 255.0), 1.0);
+        let transcu = MixtureMaterial::new(light, glass, 0.6);
+        let saturn_ring = Arc::new(Ring::new(
+            Point::new(-50.0, 350.0, 350.0),
+            100.0,
+            105.0,
+            transcu.clone(),
+        ));
+        let saturn_ring = Arc::new(RotateX::new(saturn_ring, 20.0));
+        objects.add(saturn_ring);
+        let saturn_ring = Arc::new(Ring::new(
+            Point::new(-50.0, 350.0, 350.0),
+            109.0,
+            120.0,
+            transcu,
+        ));
+        let saturn_ring = Arc::new(RotateX::new(saturn_ring, 20.0));
+        objects.add(saturn_ring);
         objects
     }
 
@@ -240,9 +316,11 @@ impl HittableList {
         let move_obj = Arc::new(Translate::new(move_obj, Vec3::new(200.0, 0.0, 300.0)));
 
         objects.add(move_obj); */
-        let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 1.0);
 
-        let ring = Ring::new(Vec3::new(300.0, 200.0, 400.0), 50.0, 60.0, light);
+        let ring = Ring::new(Vec3::new(300.0, 200.0, 400.0), 50.0, 54.0, light.clone());
+        let ring = Arc::new(RotateX::new(Arc::new(ring), 30.0));
+        objects.add(ring);
+        let ring = Ring::new(Vec3::new(300.0, 200.0, 400.0), 58.0, 60.0, light);
         let ring = Arc::new(RotateX::new(Arc::new(ring), 30.0));
         objects.add(ring);
         objects

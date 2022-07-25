@@ -71,16 +71,16 @@ fn main() {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char); // Set cursor position as 1,1
 
     let aspect_ratio = 1.0;
-    let height = 500;
+    let height = 1000;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/try6_18.jpg";
-    let samples_per_pixel = 100;
+    let path = "output/try6_4.jpg";
+    let samples_per_pixel = 3000;
     let max_depth = 50;
 
-    let camera = Camera::cornell_box();
-    let world = HittableList::cornell_box();
-    let lamp = Arc::new(HittableList::lights());
+    let camera = Camera::whale();
+    let world = HittableList::whale();
+    let lamp = Arc::new(HittableList::whale_lights());
 
     let bvhworld = BVHNode::new(world.objects.clone(), 0, world.objects.len(), 0.0, 1.0);
 
