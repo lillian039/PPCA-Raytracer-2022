@@ -2,6 +2,7 @@ use super::super::material::{
     dielectric::Dielectric, diffuse_light::DiffuseLight, lambertian::Lambertian, metal::Metal,
 };
 use super::aabb::AABB;
+use super::ring::Ring;
 use super::triangle::Object;
 use super::{
     super::basic_tools::{
@@ -12,10 +13,12 @@ use super::{
 };
 use super::{
     bvh::BVHNode,
-   // fog::ConstantMedium,
+    // fog::ConstantMedium,
     hittable_origin::{random_t, HitRecord, Hittable},
     sphere::Sphere,
-    xy_rectangle::{Cube, FlipFace, RotateY, Translate, XYRectangle, XZRectangle, YZRectangle},
+    xy_rectangle::{
+        Cube, FlipFace, RotateX, RotateY, Translate, XYRectangle, XZRectangle, YZRectangle,
+    },
 };
 
 use crate::texture::text::ImageTexture;
@@ -44,14 +47,7 @@ impl HittableList {
     pub fn whale_lights() -> HittableList {
         let mut lights = HittableList::default();
         let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 20.0);
-        let lamp = Arc::new(XZRectangle::new(
-            113.0,
-            443.0,
-            127.0,
-            432.0,
-            1299.0,
-            light,
-        ));
+        let lamp = Arc::new(XZRectangle::new(113.0, 443.0, 127.0, 432.0, 1299.0, light));
         lights.add(lamp);
         lights
     }
@@ -94,11 +90,7 @@ impl HittableList {
 
         let glass = Dielectric::new(1.5);
 
-        let cloud = Arc::new(Object::new(
-            &String::from("obj/cloud.obj"),
-            glass,
-            0.6,
-        ));
+        let cloud = Arc::new(Object::new(&String::from("obj/cloud.obj"), glass, 0.6));
         let cloud = Arc::new(BVHNode::new(
             cloud.surface.clone().objects,
             0,
@@ -202,7 +194,14 @@ impl HittableList {
             0.0, 555.0, 0.0, 555.0, 555.0, green,
         )));
         objects.add(Arc::new(YZRectangle::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
-        let lamp = Arc::new(XZRectangle::new(213.0, 343.0, 227.0, 332.0, 554.0, light));
+        let lamp = Arc::new(XZRectangle::new(
+            213.0,
+            343.0,
+            227.0,
+            332.0,
+            554.0,
+            light.clone(),
+        ));
         objects.add(Arc::new(FlipFace::new(lamp)));
         objects.add(Arc::new(XZRectangle::new(
             0.0,
@@ -221,15 +220,10 @@ impl HittableList {
             white.clone(),
         )));
         objects.add(Arc::new(XYRectangle::new(
-            0.0,
-            555.0,
-            0.0,
-            555.0,
-            555.0,
-            white,
+            0.0, 555.0, 0.0, 555.0, 555.0, white,
         )));
 
-        let obj = Arc::new(Object::new_texture(
+        /*  let obj = Arc::new(Object::new_texture(
             &String::from("obj/patrick.obj"),
             200.0,
             &String::from("obj/Char_Patrick.png"),
@@ -242,9 +236,15 @@ impl HittableList {
             1.0,
         ));
         let move_obj = Arc::new(RotateY::new(bvh_obj, 180.0));
+        let move_obj = Arc::new(RotateX::new(move_obj, -30.0));
         let move_obj = Arc::new(Translate::new(move_obj, Vec3::new(200.0, 0.0, 300.0)));
 
-        objects.add(move_obj);
+        objects.add(move_obj); */
+        let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 1.0);
+
+        let ring = Ring::new(Vec3::new(300.0, 200.0, 400.0), 50.0, 60.0, light);
+        let ring = Arc::new(RotateX::new(Arc::new(ring), 30.0));
+        objects.add(ring);
         objects
     }
 

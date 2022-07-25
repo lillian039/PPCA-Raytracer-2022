@@ -5,6 +5,7 @@ pub mod hittable_list;
 pub mod hittable_origin;
 pub mod moving_sphere;
 pub mod pdf;
+pub mod ring;
 pub mod sphere;
 pub mod triangle;
 pub mod xy_rectangle;

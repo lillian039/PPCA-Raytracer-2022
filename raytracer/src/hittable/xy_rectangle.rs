@@ -410,6 +410,98 @@ impl Hittable for RotateY {
     }
 }
 
+#[derive(Clone, Default)]
+pub struct RotateX {
+    pub ptr: Option<Arc<dyn Hittable>>,
+    pub sin_theta: f64,
+    pub cos_theta: f64,
+    pub has_box: bool,
+    pub bbox: AABB,
+}
+
+impl RotateX {
+    pub fn new(p: Arc<dyn Hittable>, angle: f64) -> Self {
+        let radius = degrees_to_radians(angle);
+        let mut bbox = AABB::default();
+        let hasbox = p.bounding_box(0.0, 1.0, &mut bbox);
+        let mut min = Point::new(INFINITY, INFINITY, INFINITY);
+        let mut max = Point::new(-INFINITY, -INFINITY, -INFINITY);
+        let cos_theta = radius.cos();
+        let sin_theta = radius.sin();
+        for i in 0..2 {
+            for j in 0..2 {
+                for k in 0..2 {
+                    let x = i as f64 * bbox.maximum.x + (1 - i) as f64 * bbox.minimum.x;
+                    let y = j as f64 * bbox.maximum.y + (1 - j) as f64 * bbox.minimum.y;
+                    let z = k as f64 * bbox.maximum.z + (1 - k) as f64 * bbox.minimum.z;
+
+                    let newy = cos_theta * y + sin_theta * z;
+                    let newz = -sin_theta * y + cos_theta * z;
+
+                    let tester = Vec3::new(x, newy, newz);
+
+                    min.x = f64::min(min.x, tester.x);
+                    max.x = f64::max(max.x, tester.x);
+
+                    min.y = f64::min(min.y, tester.y);
+                    max.y = f64::max(max.y, tester.y);
+
+                    min.z = f64::min(min.z, tester.z);
+                    max.z = f64::max(max.z, tester.z);
+                }
+            }
+        }
+        Self {
+            ptr: (Some(p)),
+            sin_theta: (sin_theta),
+            cos_theta: (cos_theta),
+            has_box: (hasbox),
+            bbox: (AABB::new(min, max)),
+        }
+    }
+}
+
+impl Hittable for RotateX {
+    fn bounding_box(&self, _time0: f64, _time1: f64, output_box: &mut AABB) -> bool {
+        *output_box = self.bbox;
+        self.has_box
+    }
+
+    fn hit<'a>(&'a self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord<'a>) -> bool {
+        let mut origin = r.point;
+        let mut direction = r.direct;
+        origin.y = self.cos_theta * r.point.y - self.sin_theta * r.point.z;
+        origin.z = self.sin_theta * r.point.y + self.cos_theta * r.point.z;
+
+        direction.y = self.cos_theta * r.direct.y - self.sin_theta * r.direct.z;
+        direction.z = self.sin_theta * r.direct.y + self.cos_theta * r.direct.z;
+
+        let rotated_r = Ray::new(origin, direction, r.time);
+
+        if !self
+            .ptr
+            .as_ref()
+            .unwrap()
+            .hit(&rotated_r, t_min, t_max, rec)
+        {
+            return false;
+        }
+
+        let mut p = rec.p;
+        let mut normal = rec.normal;
+
+        p.y = self.cos_theta * rec.p.y + self.sin_theta * rec.p.z;
+        p.z = -self.sin_theta * rec.p.y + self.cos_theta * rec.p.z;
+
+        normal.y = self.cos_theta * rec.normal.y + self.sin_theta * rec.normal.z;
+        normal.z = -self.sin_theta * rec.normal.y + self.cos_theta * rec.normal.z;
+
+        rec.p = p;
+        rec.set_face_normal(&rotated_r, &normal);
+
+        true
+    }
+}
 pub struct FlipFace {
     pub ptr: Option<Arc<dyn Hittable>>,
 }
