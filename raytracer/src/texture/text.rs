@@ -1,7 +1,7 @@
 use super::perlin::Perlin;
 use crate::basic_tools::vec3::{Color, Point};
-use image::GenericImageView;
-use std::path::Path;
+use image::{DynamicImage, GenericImageView};
+use std::{path::Path, sync::Arc};
 
 pub trait Texture: Send + Sync + Clone {
     fn value(&self, u: f64, v: f64, p: &Point) -> Color;
@@ -98,23 +98,19 @@ pub struct ImageTexture {
 impl ImageTexture {
     pub fn new(filename: &String) -> Self {
         let pathname = String::from("img/") + filename;
-        //  println!("{}", &pathname.clone());
+
         let path = Path::new(&pathname);
         let image = image::open(path).unwrap();
 
-        //   println!("find picture!");
-
         let width = image.width();
         let height = image.height();
-        //  println!("width:{}", width);
-        //  println!("hight:{}", height);
 
         let mut dat = Vec::new();
         for i in (0..height).rev() {
             for j in 0..width {
                 let pixel = image.get_pixel(j, i);
                 let tmp = [pixel[0], pixel[1], pixel[2]];
-                //   println!("r:{} g:{} b:{} ", pixel[0], pixel[1], pixel[2]);
+
                 dat.push(tmp);
             }
         }
@@ -150,6 +146,41 @@ impl Texture for ImageTexture {
             color_scale * self.data[pixel][0] as f64,
             color_scale * self.data[pixel][1] as f64,
             color_scale * self.data[pixel][2] as f64,
+        )
+    }
+}
+
+#[derive(Clone)]
+pub struct ObjectTexture {
+    pub coordinate: [[u32; 2]; 3],
+    pub img: Arc<DynamicImage>,
+}
+
+impl ObjectTexture {
+    pub fn new(coor: [[u32; 2]; 3], imge: Arc<DynamicImage>) -> Self {
+        Self {
+            coordinate: (coor),
+            img: (imge),
+        }
+    }
+}
+
+impl Texture for ObjectTexture {
+    fn value(&self, u: f64, v: f64, _p: &Point) -> Color {
+        //   println!("u:{} v:{} ", u, v);
+        let i = (1.0 - u - v) * self.coordinate[0][0] as f64
+            + u * self.coordinate[1][0] as f64
+            + v * self.coordinate[2][0] as f64;
+        let j = (1.0 - u - v) * self.coordinate[0][1] as f64
+            + u * self.coordinate[1][1] as f64
+            + v * self.coordinate[2][1] as f64;
+        //println!("i:{} j: {}", i, j);
+        let pixel = self.img.get_pixel(i as u32, self.img.height() - j as u32);
+        let color_scale = 1.0 / 255.0;
+        Color::new(
+            pixel[0] as f64 * color_scale,
+            pixel[1] as f64 * color_scale,
+            pixel[2] as f64 * color_scale,
         )
     }
 }

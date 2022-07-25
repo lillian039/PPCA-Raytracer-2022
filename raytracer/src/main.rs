@@ -71,11 +71,11 @@ fn main() {
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char); // Set cursor position as 1,1
 
     let aspect_ratio = 1.0;
-    let height = 800;
+    let height = 500;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/try6_17.jpg";
-    let samples_per_pixel = 3000;
+    let path = "output/try6_18.jpg";
+    let samples_per_pixel = 100;
     let max_depth = 50;
 
     let camera = Camera::cornell_box();

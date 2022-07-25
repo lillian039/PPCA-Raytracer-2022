@@ -1,9 +1,14 @@
+use crate::material::lambertian::Lambertian;
+
 use super::super::basic_tools;
 use super::super::material::metal::Material;
 use super::aabb::AABB;
 use super::hittable_list::HittableList;
 use super::hittable_origin::{HitRecord, Hittable};
+use crate::texture::text::ObjectTexture;
 use basic_tools::{ray::Ray, vec3::Point, vec3::Vec3};
+use image::GenericImageView;
+use std::path::Path;
 use std::sync::Arc;
 pub struct Triangle<M>
 where
@@ -96,8 +101,8 @@ impl<M: Material> Hittable for Triangle<M> {
         let a2 = self.a.y - self.b.y;
         let b2 = self.a.y - self.c.y;
         let c2 = self.a.y - p.y;
-        rec.u = (c1 * b2 - b1 * c2) / (a1 * b2 - b1 * a2);
-        rec.v = (a1 * c2 - a2 * c1) / (a1 * b2 - b1 * a2);
+        rec.u = (c1 * b2 - b1 * c2) / (a1 * b2 - b1 * a2); //β
+        rec.v = (a1 * c2 - a2 * c1) / (a1 * b2 - b1 * a2); //γ
         rec.t = t;
         rec.p = r.at(t);
         rec.mat_ptr = Some(&self.mp);
@@ -188,6 +193,8 @@ impl Object {
         );
         assert!(cornell_box.is_ok());
         let (models, _materials) = cornell_box.expect("Failed to load OBJ file");
+        /*   let materials = materials.expect("Fail to load MTL file");
+        println!("# of materials: {}", materials.len()); */
 
         let mut new_object = HittableList::default();
         for (i, m) in models.iter().enumerate() {
@@ -210,6 +217,64 @@ impl Object {
             }
             points.clear();
         }
+        Self {
+            surface: (new_object),
+        }
+    }
+
+    #[allow(clippy::needless_range_loop)]
+    pub fn new_texture(filename: &String, scale: f64, imgname: &String) -> Self {
+        let mut points = Vec::default();
+        let cornell_box = tobj::load_obj(
+            filename,
+            &tobj::LoadOptions {
+                single_index: false,
+                triangulate: true,
+                ..Default::default()
+            },
+        );
+        assert!(cornell_box.is_ok());
+        let (models, _materials) = cornell_box.expect("Failed to load OBJ file");
+
+        let mut new_object = HittableList::default();
+        for (i, m) in models.iter().enumerate() {
+            let mesh = &m.mesh;
+            println!("total surface: {}", mesh.indices.len() / 3);
+            println!("model[{}].vertices: {}", i, mesh.positions.len() / 3);
+            let path = Path::new(&imgname);
+            let image = image::open(path).unwrap();
+            let width = image.width() as f32;
+            let height = image.height() as f32;
+
+            let image_arc = Arc::new(image);
+            let mut coor_tmp = Vec::default();
+
+            for i in 0..mesh.texcoords.len() / 6 {
+                let mut coor = [[0; 2]; 3];
+                for j in 0..3 {
+                    coor[j][0] = (mesh.texcoords[i * 6 + 2 * j] * width) as u32;
+                    coor[j][1] = (mesh.texcoords[i * 6 + 2 * j + 1] * height) as u32;
+                }
+                coor_tmp.push(coor);
+            }
+            for v in 0..mesh.positions.len() / 3 {
+                let x = mesh.positions[3 * v] as f64 * scale;
+                let y = mesh.positions[3 * v + 1] as f64 * scale;
+                let z = mesh.positions[3 * v + 2] as f64 * scale;
+                let p = Point::new(x, y, z);
+                points.push(p);
+            }
+            for v in 0..mesh.indices.len() / 3 {
+                let p1 = points[mesh.indices[v * 3] as usize];
+                let p2 = points[mesh.indices[v * 3 + 1] as usize];
+                let p3 = points[mesh.indices[v * 3 + 2] as usize];
+                let mat = Lambertian::newp(ObjectTexture::new(coor_tmp[v], image_arc.clone()));
+                let trian = Triangle::new(p1, p2, p3, mat);
+                new_object.add(Arc::new(trian));
+            }
+            points.clear();
+        }
+
         Self {
             surface: (new_object),
         }

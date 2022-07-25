@@ -12,7 +12,7 @@ use super::{
 };
 use super::{
     bvh::BVHNode,
-    fog::ConstantMedium,
+   // fog::ConstantMedium,
     hittable_origin::{random_t, HitRecord, Hittable},
     sphere::Sphere,
     xy_rectangle::{Cube, FlipFace, RotateY, Translate, XYRectangle, XZRectangle, YZRectangle},
@@ -41,7 +41,7 @@ impl HittableList {
         }
     }
 
-    pub fn lights() -> HittableList {
+    pub fn whale_lights() -> HittableList {
         let mut lights = HittableList::default();
         let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 20.0);
         let lamp = Arc::new(XZRectangle::new(
@@ -50,13 +50,13 @@ impl HittableList {
             127.0,
             432.0,
             1299.0,
-            light.clone(),
+            light,
         ));
         lights.add(lamp);
         lights
     }
 
-    pub fn cornell_box() -> HittableList {
+    pub fn whale() -> HittableList {
         let mut objects = HittableList::default();
 
         let back = ImageTexture::new(&String::from("pinkblue.png"));
@@ -96,7 +96,7 @@ impl HittableList {
 
         let cloud = Arc::new(Object::new(
             &String::from("obj/cloud.obj"),
-            glass.clone(),
+            glass,
             0.6,
         ));
         let cloud = Arc::new(BVHNode::new(
@@ -185,6 +185,77 @@ impl HittableList {
         objects.add(venus);
 
         objects
+    }
+
+    pub fn cornell_box() -> HittableList {
+        let mut objects = HittableList::default();
+        /*   let emat = Arc::new(Lambertian::newp(Arc::new(ImageTexture::new(
+            &String::from("earthmap.jpg"),
+        )))); */
+
+        let red = Lambertian::new(Color::new(0.65, 0.05, 0.05));
+        let white = Lambertian::new(Color::new(0.73, 0.73, 0.73));
+        let green = Lambertian::new(Color::new(0.12, 0.45, 0.15));
+        let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 15.0);
+
+        objects.add(Arc::new(YZRectangle::new(
+            0.0, 555.0, 0.0, 555.0, 555.0, green,
+        )));
+        objects.add(Arc::new(YZRectangle::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
+        let lamp = Arc::new(XZRectangle::new(213.0, 343.0, 227.0, 332.0, 554.0, light));
+        objects.add(Arc::new(FlipFace::new(lamp)));
+        objects.add(Arc::new(XZRectangle::new(
+            0.0,
+            555.0,
+            0.0,
+            555.0,
+            0.0,
+            white.clone(),
+        )));
+        objects.add(Arc::new(XZRectangle::new(
+            0.0,
+            555.0,
+            0.0,
+            555.0,
+            555.0,
+            white.clone(),
+        )));
+        objects.add(Arc::new(XYRectangle::new(
+            0.0,
+            555.0,
+            0.0,
+            555.0,
+            555.0,
+            white,
+        )));
+
+        let obj = Arc::new(Object::new_texture(
+            &String::from("obj/patrick.obj"),
+            200.0,
+            &String::from("obj/Char_Patrick.png"),
+        ));
+        let bvh_obj = Arc::new(BVHNode::new(
+            obj.surface.clone().objects,
+            0,
+            obj.surface.objects.len(),
+            0.0,
+            1.0,
+        ));
+        let move_obj = Arc::new(RotateY::new(bvh_obj, 180.0));
+        let move_obj = Arc::new(Translate::new(move_obj, Vec3::new(200.0, 0.0, 300.0)));
+
+        objects.add(move_obj);
+        objects
+    }
+
+    pub fn lights() -> HittableList {
+        let mut lights = HittableList::default();
+        let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 15.0);
+        let lamp = Arc::new(XZRectangle::new(213.0, 343.0, 227.0, 332.0, 554.0, light));
+        lights.add(lamp);
+        /*   let ball = Arc::new(Sphere::new(Point::new(190.0, 90.0, 190.0), 90.0, light));
+        lights.add(ball); */
+        lights
     }
 }
 
