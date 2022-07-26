@@ -141,10 +141,10 @@ impl HittableList {
         objects.add(Arc::new(XYRectangle::new(
             -800.0, 1355.0, 0.0, 1300.0, 1355.0, pink,
         )));
+        let light2 = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 1.0);
+        let blue = MixtureMaterial::new(light2, glass.clone(), 0.5);
 
-        //let blue=Lambertian::new(Color::new(30.0/255.0, 144.0/255.0, 1.0));
-
-        let obj = Arc::new(Object::new(&String::from("obj/whale.obj"), white, 800.0));
+        let obj = Arc::new(Object::new(&String::from("obj/whale.obj"), blue, 800.0));
         let bvh_obj = Arc::new(BVHNode::new(
             obj.surface.clone().objects,
             0,
@@ -203,11 +203,11 @@ impl HittableList {
         objects.add(planets_ring);
 
         let emat = DiffuseLight::new(ImageTexture::new(&String::from("earthmap.jpg")), 1.0);
-        let earth = Arc::new(Sphere::new(Point::new(200.0, 350.0, 400.0), 50.0, emat));
+        let earth = Arc::new(Sphere::new(Point::new(200.0, 350.0, 150.0), 50.0, emat));
         objects.add(earth);
 
         let mermat = DiffuseLight::new(ImageTexture::new(&String::from("mercury.jpg")), 1.2);
-        let mercury = Arc::new(Sphere::new(Point::new(360.0, 429.0, 500.0), 50.0, mermat));
+        let mercury = Arc::new(Sphere::new(Point::new(360.0, 400.0, 500.0), 50.0, mermat));
         objects.add(mercury);
 
         let venusmat = DiffuseLight::new(ImageTexture::new(&String::from("venus.jpg")), 1.2);
