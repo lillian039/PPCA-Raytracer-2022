@@ -59,7 +59,7 @@ impl HittableList {
 
         let back = ImageTexture::new(&String::from("pinkblue.png"));
         let pink = Lambertian::newp(back);
-        let white = Lambertian::new(Color::new(0.73, 0.73, 0.73));
+        //  let white = Lambertian::new(Color::new(0.73, 0.73, 0.73));
         let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 20.0);
         let mut boxes1 = HittableList::default();
         let aluminum = Metal::new(Vec3::new(0.8, 0.85, 0.88), 0.);
@@ -161,14 +161,14 @@ impl HittableList {
 
         let mut planets_ring = HittableList::default();
 
-        for _i in 0..200 {
-            let r = random_t(370.0, 470.0);
+        for _i in 0..300 {
+            let r = random_t(420.0, 520.0);
             let theta = random_t(0.0, 360.0);
             let high = random_t(0.0, 50.0) - 25.0;
             let posi = Vec3::new(
                 center.x + theta.cos() * r,
-                center.y + high,
-                center.z + theta.sin() * r,
+                center.y + theta.sin() * r,
+                center.z + high,
             );
             let rball = random_t(7.0, 12.0);
             let choice = random_double();
@@ -198,7 +198,7 @@ impl HittableList {
             1.0,
         ));
 
-        let planets_ring = Arc::new(RotateX::new(planets_ring, 20.0));
+        //let planets_ring = Arc::new(RotateX::new(planets_ring, 20.0));
 
         objects.add(planets_ring);
 

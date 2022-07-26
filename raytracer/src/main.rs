@@ -74,8 +74,8 @@ fn main() {
     let height = 1000;
     let width = (aspect_ratio * height as f64) as u32;
     let quality = 100; // From 0 to 100
-    let path = "output/try6_7.jpg";
-    let samples_per_pixel = 10000;
+    let path = "output/try6_8.jpg";
+    let samples_per_pixel = 8000;
     let max_depth = 50;
 
     let camera = Camera::whale();
