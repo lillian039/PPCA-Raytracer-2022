@@ -212,5 +212,5 @@ impl Camera {
 
 pub fn get_background(_t: f64) -> Color {
     //Color::new(1.0, 192.0 / 255.0, 203.0 / 255.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t
-    Color::new(0.5, 0.7, 1.0)
+    Color::new(0.0, 0.0, 0.0)
 }

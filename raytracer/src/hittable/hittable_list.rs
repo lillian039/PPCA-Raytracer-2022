@@ -161,14 +161,14 @@ impl HittableList {
 
         let mut planets_ring = HittableList::default();
 
-        for _i in 0..300 {
-            let r = random_t(420.0, 520.0);
+        for _i in 0..200 {
+            let r = random_t(370.0, 470.0);
             let theta = random_t(0.0, 360.0);
             let high = random_t(0.0, 50.0) - 25.0;
             let posi = Vec3::new(
                 center.x + theta.cos() * r,
-                center.y + theta.sin() * r,
-                center.z + high,
+                center.y + high,
+                center.z + theta.sin() * r,
             );
             let rball = random_t(7.0, 12.0);
             let choice = random_double();
@@ -198,7 +198,7 @@ impl HittableList {
             1.0,
         ));
 
-        //let planets_ring = Arc::new(RotateX::new(planets_ring, 20.0));
+        let planets_ring = Arc::new(RotateX::new(planets_ring, 20.0));
 
         objects.add(planets_ring);
 
@@ -254,12 +254,8 @@ impl HittableList {
         objects.add(saturn_ring);
         objects
     }
-
     pub fn cornell_box() -> HittableList {
         let mut objects = HittableList::default();
-        /*   let emat = Arc::new(Lambertian::newp(Arc::new(ImageTexture::new(
-            &String::from("earthmap.jpg"),
-        )))); */
 
         let red = Lambertian::new(Color::new(0.65, 0.05, 0.05));
         let white = Lambertian::new(Color::new(0.73, 0.73, 0.73));
@@ -270,14 +266,7 @@ impl HittableList {
             0.0, 555.0, 0.0, 555.0, 555.0, green,
         )));
         objects.add(Arc::new(YZRectangle::new(0.0, 555.0, 0.0, 555.0, 0.0, red)));
-        let lamp = Arc::new(XZRectangle::new(
-            213.0,
-            343.0,
-            227.0,
-            332.0,
-            554.0,
-            light.clone(),
-        ));
+        let lamp = Arc::new(XZRectangle::new(213.0, 343.0, 227.0, 332.0, 554.0, light));
         objects.add(Arc::new(FlipFace::new(lamp)));
         objects.add(Arc::new(XZRectangle::new(
             0.0,
@@ -299,7 +288,7 @@ impl HittableList {
             0.0, 555.0, 0.0, 555.0, 555.0, white,
         )));
 
-        /*  let obj = Arc::new(Object::new_texture(
+        let obj = Arc::new(Object::new_texture(
             &String::from("obj/patrick.obj"),
             200.0,
             &String::from("obj/Char_Patrick.png"),
@@ -312,17 +301,17 @@ impl HittableList {
             1.0,
         ));
         let move_obj = Arc::new(RotateY::new(bvh_obj, 180.0));
-        let move_obj = Arc::new(RotateX::new(move_obj, -30.0));
+        // let move_obj = Arc::new(RotateX::new(move_obj, -30.0));
         let move_obj = Arc::new(Translate::new(move_obj, Vec3::new(200.0, 0.0, 300.0)));
 
-        objects.add(move_obj); */
+        objects.add(move_obj);
 
-        let ring = Ring::new(Vec3::new(300.0, 200.0, 400.0), 50.0, 54.0, light.clone());
+        /* let ring = Ring::new(Vec3::new(300.0, 200.0, 400.0), 50.0, 54.0, light.clone());
         let ring = Arc::new(RotateX::new(Arc::new(ring), 30.0));
         objects.add(ring);
         let ring = Ring::new(Vec3::new(300.0, 200.0, 400.0), 58.0, 60.0, light);
         let ring = Arc::new(RotateX::new(Arc::new(ring), 30.0));
-        objects.add(ring);
+        objects.add(ring); */
         objects
     }
 

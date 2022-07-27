@@ -2,7 +2,11 @@
 
 光追模拟！
 
-目前进度：完成三本书
+最终作品：
+
+《鲸》
+
+![high5_1.jpg](https://s2.loli.net/2022/07/27/aKfk9OorRm6NWvS.jpg)
 
 ## Book 1
 
@@ -117,4 +121,56 @@ cornell_box 渲染结果：
   - 直接对光照进行采样
 - MixturePDF
   - 将二者结合（各0.5）的混合密度采样
+
+
+
+## Extra Function
+
+**添加 Hittable 类：**
+
+- triangle.rs
+  - 三角形类，空间中任意三个点组成的三角形
+- Object
+  - 物品类，导入obj，由三角形面组成任意物体
+  - 贴图，由obj中的贴图信息，将图片贴到物品上
+
+![派大星.jpg](https://s2.loli.net/2022/07/27/vVIfHakB4cTChQx.jpg)
+
+- Ring
+  - 环类，没有厚度，用于制作土星环
+- RotateX
+  - 沿x轴旋转物品
+
+**添加 Material 类：**
+
+- MixtureMaterial
+  - 将任意两个材质以任意比例混合
+- 修改DisffuseLight
+  - 可任意设定光照强度
+
+**改进多线程**：
+
+增加random shuffle，使得各个线程完成时间几乎一致
+
+![thread.png](https://s2.loli.net/2022/07/27/sfxidcmE7b6Kh5a.png)
+
+**将 Material 与 Texture 类改为了泛型**
+
+**阅读Unity Shader** ：
+
+学习了部分光栅化知识，做了笔记
+
+如GPU渲染流程，光照算法，阴影算法，各种贴图，玻璃金属材质的实现
+
+完成了其中卷积边缘检测进行描边
+
+![描边.jpg](https://s2.loli.net/2022/07/27/SHFTruDbpYcI9G8.jpg)
+
+
+
+实现了最终作品《鲸》
+
+
+
+![high5_1.jpg](https://s2.loli.net/2022/07/27/aKfk9OorRm6NWvS.jpg)
 

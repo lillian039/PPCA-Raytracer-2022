@@ -139,10 +139,10 @@ impl Object {
         let (models, _materials) = cornell_box.expect("Failed to load OBJ file");
 
         let mut new_object = HittableList::default();
-        for (i, m) in models.iter().enumerate() {
+        for (_i, m) in models.iter().enumerate() {
             let mesh = &m.mesh;
-            println!("total surface: {}", mesh.indices.len() / 4);
-            println!("model[{}].vertices: {}", i, mesh.positions.len() / 3);
+            // println!("total surface: {}", mesh.indices.len() / 4);
+            // println!("model[{}].vertices: {}", i, mesh.positions.len() / 3);
             for v in 0..mesh.positions.len() / 3 {
                 let x = mesh.positions[3 * v] as f64 * scale;
                 let y = mesh.positions[3 * v + 1] as f64 * scale;
@@ -152,13 +152,6 @@ impl Object {
                 points.push(p);
             }
             for v in 0..mesh.indices.len() / 4 {
-                println!(
-                    "a:{} b:{} c:{} d:{} ",
-                    mesh.indices[v * 4],
-                    mesh.indices[v * 4 + 1],
-                    mesh.indices[v * 4 + 2],
-                    mesh.indices[v * 4 + 3]
-                );
                 let p1 = points[mesh.indices[v * 4] as usize];
                 let p2 = points[mesh.indices[v * 4 + 1] as usize];
                 let p3 = points[mesh.indices[v * 4 + 2] as usize];
@@ -197,10 +190,10 @@ impl Object {
         println!("# of materials: {}", materials.len()); */
 
         let mut new_object = HittableList::default();
-        for (i, m) in models.iter().enumerate() {
+        for (_i, m) in models.iter().enumerate() {
             let mesh = &m.mesh;
-            println!("total surface: {}", mesh.indices.len() / 3);
-            println!("model[{}].vertices: {}", i, mesh.positions.len() / 3);
+            //  println!("total surface: {}", mesh.indices.len() / 3);
+            // println!("model[{}].vertices: {}", i, mesh.positions.len() / 3);
             for v in 0..mesh.positions.len() / 3 {
                 let x = mesh.positions[3 * v] as f64 * scale;
                 let y = mesh.positions[3 * v + 1] as f64 * scale;

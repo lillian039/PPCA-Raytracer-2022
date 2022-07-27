@@ -16,7 +16,7 @@ pub mod texture;
 use basic_tools::{
     camera::{get_background, Camera},
     ray::Ray,
-    vec3::{add_u, minus_u, pow_u, Color, Vec3},
+    vec3::{Color, Vec3},
 };
 use hittable::{
     bvh::BVHNode,
@@ -71,16 +71,16 @@ fn main() {
     print!("{}[2J", 27 as char); // Clear screen 27 as char --> esc
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char); // Set cursor position as 1,1
 
-    const ASPECT_RATIO: f64 = 16.0 / 9.0;
+    const ASPECT_RATIO: f64 = 1.0;
     const HEIGHT: usize = 500;
     const WIDTH: usize = (ASPECT_RATIO * HEIGHT as f64) as usize;
     let quality = 100; // From 0 to 100
-    let path = "output/try6_14.jpg";
-    let samples_per_pixel = 1000;
+    let path = "output/try6_17.jpg";
+    let samples_per_pixel = 2000;
     let max_depth = 50;
 
-    let camera = Camera::new_random_scence();
-    let world = HittableList::random_scene();
+    let camera = Camera::whale();
+    let world = HittableList::whale();
     let lamp = Arc::new(HittableList::whale_lights());
 
     let bvhworld = BVHNode::new(world.objects.clone(), 0, world.objects.len(), 0.0, 1.0);
@@ -221,36 +221,7 @@ fn main() {
 
     for y in 0..HEIGHT {
         for x in 0..WIDTH {
-            let mut pixel_color = image_output[x as usize][y as usize];
-            if x != 0 && x != WIDTH - 1 && y != 0 && y != HEIGHT - 1 {
-                let gx = add_u(
-                    image_output[x][y + 1],
-                    image_output[x - 1][y + 1],
-                    image_output[x + 1][y + 1],
-                );
-                let fx = add_u(
-                    image_output[x][y - 1],
-                    image_output[x - 1][y - 1],
-                    image_output[x + 1][y - 1],
-                );
-                let sx = minus_u(gx, fx);
-                let gy = add_u(
-                    image_output[x + 1][y + 1],
-                    image_output[x + 1][y],
-                    image_output[x + 1][y - 1],
-                );
-                let fy = add_u(
-                    image_output[x - 1][y + 1],
-                    image_output[x - 1][y],
-                    image_output[x - 1][y + 1],
-                );
-                let sy = minus_u(gy, fy);
-                let s = pow_u(sx) + pow_u(sy);
-                // println!("G!:{}", s);
-                if s > 9000 {
-                    pixel_color = [0, 0, 0];
-                }
-            }
+            let pixel_color = image_output[x as usize][y as usize];
             let pixel = img.get_pixel_mut(x as u32, (HEIGHT - y - 1) as u32);
             *pixel = image::Rgb(pixel_color);
         }
