@@ -16,7 +16,7 @@ pub mod texture;
 use basic_tools::{
     camera::{get_background, Camera},
     ray::Ray,
-    vec3::{Color, Vec3},
+    vec3::{add_u, minus_u, pow_u, Color, Vec3},
 };
 use hittable::{
     bvh::BVHNode,
@@ -26,6 +26,7 @@ use hittable::{
 };
 use material::metal::ScatterRecord;
 use rand::{prelude::SliceRandom, thread_rng};
+
 fn ray_color(r: &Ray, t: f64, world: &dyn Hittable, light: Arc<dyn Hittable>, depth: i32) -> Color {
     if depth <= 0 {
         return Color::new(0.0, 0.0, 0.0);
@@ -70,29 +71,29 @@ fn main() {
     print!("{}[2J", 27 as char); // Clear screen 27 as char --> esc
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char); // Set cursor position as 1,1
 
-    let aspect_ratio = 1.0;
-    let height = 1000;
-    let width = (aspect_ratio * height as f64) as u32;
+    const ASPECT_RATIO: f64 = 16.0 / 9.0;
+    const HEIGHT: usize = 500;
+    const WIDTH: usize = (ASPECT_RATIO * HEIGHT as f64) as usize;
     let quality = 100; // From 0 to 100
-    let path = "output/try6_8.jpg";
-    let samples_per_pixel = 8000;
+    let path = "output/try6_14.jpg";
+    let samples_per_pixel = 1000;
     let max_depth = 50;
 
-    let camera = Camera::whale();
-    let world = HittableList::whale();
+    let camera = Camera::new_random_scence();
+    let world = HittableList::random_scene();
     let lamp = Arc::new(HittableList::whale_lights());
 
     let bvhworld = BVHNode::new(world.objects.clone(), 0, world.objects.len(), 0.0, 1.0);
 
     println!(
         "Image size: {}\nJPEG quality: {}",
-        style(width.to_string() + "x" + &height.to_string()).yellow(),
+        style(WIDTH.to_string() + "x" + &HEIGHT.to_string()).yellow(),
         style(quality.to_string()).yellow(),
     );
 
     println!("Sample per pixel: {}", samples_per_pixel);
     // Create image data
-    let mut img: RgbImage = ImageBuffer::new(width, height);
+    let mut img: RgbImage = ImageBuffer::new(WIDTH as u32, HEIGHT as u32);
 
     let multiprogress = Arc::new(MultiProgress::new());
     multiprogress.set_move_cursor(true);
@@ -100,10 +101,10 @@ fn main() {
     let thread_total = 8;
     let mut threads = Vec::new();
     let mut output_pixel = Vec::new();
-    let hight_line = height / thread_total;
+    let hight_line = HEIGHT / thread_total;
 
     let mut random_pixal = Vec::default();
-    let sum = width * height;
+    let sum = WIDTH * HEIGHT;
     for i in 0..sum {
         random_pixal.push(i);
     }
@@ -114,7 +115,7 @@ fn main() {
         let hight_begin = hight_line * thread_num;
         let mut hight_end = hight_begin + hight_line;
         if thread_num == thread_total - 1 {
-            hight_end = height;
+            hight_end = HEIGHT;
         }
 
         let world_thread = bvhworld.clone();
@@ -124,7 +125,7 @@ fn main() {
         let t_random_pixel = random_pixal.clone();
 
         let mp = multiprogress.clone();
-        let progress_bar = mp.add(ProgressBar::new(((hight_end - hight_begin) * width) as u64));
+        let progress_bar = mp.add(ProgressBar::new(((hight_end - hight_begin) * WIDTH) as u64));
         progress_bar.set_style(ProgressStyle::default_bar()
         .template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] [{pos}/{len}] ({eta})")
         .progress_chars("#>-"));
@@ -141,16 +142,16 @@ fn main() {
                 let mut pixel_color_thread = Vec::new();
 
                 for y in hight_begin..hight_end {
-                    for x in 0..width {
-                        let cnt = y * width + x;
+                    for x in 0..WIDTH {
+                        let cnt = y * WIDTH + x;
                         let map_cnt = t_random_pixel[cnt as usize];
-                        let x_map = map_cnt % width;
-                        let y_map = map_cnt / width;
+                        let x_map = map_cnt % WIDTH;
+                        let y_map = map_cnt / WIDTH;
 
                         let mut col = Vec3::new(0.0, 0.0, 0.0);
                         for _s in 0..samples_per_pixel {
-                            let u = (x_map as f64 + random_double()) / (width as f64);
-                            let v = (y_map as f64 + random_double()) / (height as f64);
+                            let u = (x_map as f64 + random_double()) / (WIDTH as f64);
+                            let v = (y_map as f64 + random_double()) / (HEIGHT as f64);
                             let r = camera_thread.get_ray(u, v);
                             col += ray_color(&r, v, &world_thread, light.clone(), max_depth);
                         }
@@ -204,17 +205,54 @@ fn main() {
     }
     println!("Generating Image...");
 
+    let mut image_output = [[[0; 3]; HEIGHT]; WIDTH];
     let mut pixel_num = 0;
-    for y in 0..height {
-        for x in 0..width {
+    for y in 0..HEIGHT {
+        for x in 0..WIDTH {
             let pixel_color = output_pixel[pixel_num];
-            let cnt = y * width + x;
+            let cnt = y * WIDTH + x;
             let map_cnt = random_pixal[cnt as usize];
-            let y_map = map_cnt / width;
-            let x_map = map_cnt % width;
-            let pixel = img.get_pixel_mut(x_map, height - y_map - 1);
+            let y_map = map_cnt / WIDTH;
+            let x_map = map_cnt % WIDTH;
+            image_output[x_map][y_map] = pixel_color;
+            pixel_num += 1
+        }
+    }
+
+    for y in 0..HEIGHT {
+        for x in 0..WIDTH {
+            let mut pixel_color = image_output[x as usize][y as usize];
+            if x != 0 && x != WIDTH - 1 && y != 0 && y != HEIGHT - 1 {
+                let gx = add_u(
+                    image_output[x][y + 1],
+                    image_output[x - 1][y + 1],
+                    image_output[x + 1][y + 1],
+                );
+                let fx = add_u(
+                    image_output[x][y - 1],
+                    image_output[x - 1][y - 1],
+                    image_output[x + 1][y - 1],
+                );
+                let sx = minus_u(gx, fx);
+                let gy = add_u(
+                    image_output[x + 1][y + 1],
+                    image_output[x + 1][y],
+                    image_output[x + 1][y - 1],
+                );
+                let fy = add_u(
+                    image_output[x - 1][y + 1],
+                    image_output[x - 1][y],
+                    image_output[x - 1][y + 1],
+                );
+                let sy = minus_u(gy, fy);
+                let s = pow_u(sx) + pow_u(sy);
+                // println!("G!:{}", s);
+                if s > 9000 {
+                    pixel_color = [0, 0, 0];
+                }
+            }
+            let pixel = img.get_pixel_mut(x as u32, (HEIGHT - y - 1) as u32);
             *pixel = image::Rgb(pixel_color);
-            pixel_num += 1;
         }
     }
 

@@ -335,6 +335,61 @@ impl HittableList {
         lights.add(ball); */
         lights
     }
+    pub fn random_scene() -> HittableList {
+        let mut world = HittableList::default();
+        let ground_material = Lambertian::new(Color::new(0.5, 0.5, 0.5));
+        world.add(Arc::new(Sphere::new(
+            Point::new(0.0, -1000.0, 0.0),
+            1000.0,
+            ground_material,
+        )));
+
+        for a in -11..11 {
+            for b in -11..11 {
+                let choose_mat = random_double();
+                let center = Point::new(
+                    a as f64 + 0.9 * random_double(),
+                    0.2,
+                    b as f64 + 0.9 * random_double(),
+                );
+
+                if (center - Point::new(4.0, 0.2, 0.0)).length() > 0.9 {
+                    if choose_mat < 0.8 {
+                        let albedo = Color::random() * Color::random();
+                        let sphere_material = Lambertian::new(albedo);
+                        world.add(Arc::new(Sphere::new(center, 0.2, sphere_material)));
+                    } else if choose_mat < 0.95 {
+                        let albedo = Color::random_range(0.5, 1.0);
+                        let fuzz = random_t(0.0, 0.5);
+                        let sphere_material = Metal::new(albedo, fuzz);
+                        world.add(Arc::new(Sphere::new(center, 0.2, sphere_material)));
+                    } else {
+                        let sphere_material = Dielectric::new(1.5);
+                        world.add(Arc::new(Sphere::new(center, 0.2, sphere_material)));
+                    }
+                }
+            }
+        }
+        let material_1 = Dielectric::new(1.5);
+        world.add(Arc::new(Sphere::new(
+            Point::new(0.0, 1.0, 0.0),
+            1.0,
+            material_1,
+        )));
+        let material_2 = Lambertian::new(Color::new(0.4, 0.2, 0.1));
+        world.add(Arc::new(Sphere::new(
+            Point::new(-4.0, 1.0, 0.0),
+            1.0,
+            material_2,
+        )));
+        let material_3 = Metal::new(Color::new(0.7, 0.6, 0.5), 0.0);
+        world.add(Arc::new(Sphere::new(
+            Point::new(4.0, 1.0, 0.0),
+            1.0,
+            material_3,
+        )));
+        world
+    }
 }
 
 impl Hittable for HittableList {

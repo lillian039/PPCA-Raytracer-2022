@@ -146,7 +146,7 @@ impl Camera {
         let lookat = Point::new(0.0, 0.0, 0.0);
         let vup = Vec3::new(0.0, 1.0, 0.0);
         let dist_to_focus = 10.0;
-        let aperture = 0.1;
+        let aperture = 0.0;
         Camera::new(
             lookfrom,
             lookat,
@@ -212,5 +212,5 @@ impl Camera {
 
 pub fn get_background(_t: f64) -> Color {
     //Color::new(1.0, 192.0 / 255.0, 203.0 / 255.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t
-    Color::new(0.0, 0.0, 0.0)
+    Color::new(0.5, 0.7, 1.0)
 }

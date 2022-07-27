@@ -208,3 +208,30 @@ impl Div<f64> for Vec3 {
         }
     }
 }
+
+pub fn add_u(a: [u8; 3], b: [u8; 3], c: [u8; 3]) -> [u32; 3] {
+    [
+        a[0] as u32 + b[0] as u32 + c[0] as u32,
+        a[1] as u32 + b[1] as u32 + c[1] as u32,
+        a[2] as u32 + b[2] as u32 + c[2] as u32,
+    ]
+}
+
+pub fn minus_u(a: [u32; 3], b: [u32; 3]) -> [i32; 3] {
+    [
+        -(a[0] as i32) + b[0] as i32,
+        -(a[1] as i32) + b[1] as i32,
+        -(a[2] as i32) + b[2] as i32,
+    ]
+}
+
+pub fn pow_u(a: [i32; 3]) -> i32 {
+    a[0].pow(2) + a[1].pow(2) + a[2].pow(2)
+}
+pub fn add_avr(a: [u32; 3], b: [u32; 3], c: [u32; 3], d: [u32; 3]) -> [u32; 3] {
+    [
+        a[0] + b[0] + c[0] + d[0],
+        a[1] + b[1] + c[1] + d[1],
+        a[2] + b[2] + c[2] + d[2],
+    ]
+}
