@@ -63,6 +63,28 @@ impl<M: Material> Hittable for XYRectangle<M> {
         rec.p = r.at(t);
         true
     }
+
+    fn pdf_value(&self, o: &Point, v: &Vec3) -> f64 {
+        let mut rec = HitRecord::default();
+        if !self.hit(&Ray::new(*o, *v, 0.0), 0.001, INFINITY, &mut rec) {
+            return 1.0;
+        }
+
+        let area = (self.x1 - self.x0) * (self.y1 - self.y0);
+        let distance_squard = rec.t * rec.t * v.length_squared();
+        let cosine = (Vec3::dot(v, &rec.normal) / v.length()).abs();
+
+        distance_squard / (cosine * area)
+    }
+
+    fn random(&self, o: &Vec3) -> Vec3 {
+        let random_point = Point::new(
+            random_t(self.x0, self.x1),
+            random_t(self.y0, self.y1),
+            self.k,
+        );
+        random_point - *o
+    }
 }
 
 #[derive(Clone, Default)]
@@ -122,7 +144,7 @@ impl<M: Material> Hittable for XZRectangle<M> {
     fn pdf_value(&self, o: &Point, v: &Vec3) -> f64 {
         let mut rec = HitRecord::default();
         if !self.hit(&Ray::new(*o, *v, 0.0), 0.001, INFINITY, &mut rec) {
-            return 0.0;
+            return 1.0;
         }
 
         let area = (self.x1 - self.x0) * (self.z1 - self.z0);
@@ -193,6 +215,27 @@ impl<M: Material> Hittable for YZRectangle<M> {
         rec.mat_ptr = Some(&self.mp);
         rec.p = r.at(t);
         true
+    }
+    fn pdf_value(&self, o: &Point, v: &Vec3) -> f64 {
+        let mut rec = HitRecord::default();
+        if !self.hit(&Ray::new(*o, *v, 0.0), 0.001, INFINITY, &mut rec) {
+            return 1.0;
+        }
+
+        let area = (self.y1 - self.y0) * (self.z1 - self.z0);
+        let distance_squard = rec.t * rec.t * v.length_squared();
+        let cosine = (Vec3::dot(v, &rec.normal) / v.length()).abs();
+
+        distance_squard / (cosine * area)
+    }
+
+    fn random(&self, o: &Vec3) -> Vec3 {
+        let random_point = Point::new(
+            self.k,
+            random_t(self.y0, self.y1),
+            random_t(self.z0, self.z1),
+        );
+        random_point - *o
     }
 }
 
