@@ -69,12 +69,12 @@ pub fn render() {
     print!("{}[2J", 27 as char); // Clear screen 27 as char --> esc
     print!("{esc}[2J{esc}[1;1H", esc = 27 as char); // Set cursor position as 1,1
 
-    const ASPECT_RATIO: f64 = 1.0;
-    const HEIGHT: usize = 500;
+    const ASPECT_RATIO: f64 = 16.0 / 9.0;
+    const HEIGHT: usize = 900;
     const WIDTH: usize = (ASPECT_RATIO * HEIGHT as f64) as usize;
     let quality = 100; // From 0 to 100
-    let path = "output/try6_20.jpg";
-    let samples_per_pixel = 100;
+    let path = "output/try7.jpg";
+    let samples_per_pixel = 1000;
     let max_depth = 50;
 
     let camera = Camera::whale();

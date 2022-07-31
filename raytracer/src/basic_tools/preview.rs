@@ -22,9 +22,10 @@ fn scale_line(r: &Ray, world: &dyn Hittable, camera: Camera) -> f64 {
     if !world.hit(r, 0.001, INFINITY, &mut rec) {
         return INFINITY;
     }
-    (camera.origin.x - rec.p.x).powi(2)
+    ((camera.origin.x - rec.p.x).powi(2)
         + (camera.origin.y - rec.p.y).powi(2)
-        + (camera.origin.z - rec.p.z).powi(2)
+        + (camera.origin.z - rec.p.z).powi(2))
+    .sqrt()
 }
 
 pub fn preview() {
@@ -35,7 +36,7 @@ pub fn preview() {
     const HEIGHT: usize = 1000;
     const WIDTH: usize = (ASPECT_RATIO * HEIGHT as f64) as usize;
     let quality = 100; // From 0 to 100
-    let path = "output/try6_19_preview.jpg";
+    let path = "output/try6_23.jpg";
     let samples_per_pixel = 100;
 
     let camera = Camera::whale();
@@ -108,7 +109,7 @@ pub fn preview() {
                         let u = (x_map as f64) / (WIDTH as f64);
                         let v = (y_map as f64) / (HEIGHT as f64);
                         let r = camera_thread.get_ray(u, v);
-                        let depth = scale_line(&r, &world_thread, camera_thread.clone());
+                        let depth = scale_line(&r, &world_thread, camera_thread);
                         depth_thread.push(depth);
 
                         progress += 1;
@@ -162,8 +163,9 @@ pub fn preview() {
                 let gx = depth_output[x + 1][y - 1] - depth_output[x - 1][y + 1];
                 let fx = depth_output[x - 1][y - 1] - depth_output[x + 1][y + 1];
                 let s = (gx.powi(2) + fx.powi(2)).sqrt();
+                //  println!("S:{}", s);
 
-                if s > 10000.0 {
+                if s > 10.0 {
                     pixel_color = [0, 0, 0];
                 }
             }

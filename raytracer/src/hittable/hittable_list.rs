@@ -48,7 +48,7 @@ impl HittableList {
 
     pub fn whale_lights() -> HittableList {
         let mut lights = HittableList::default();
-        let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 20.0);
+        let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 30.0);
         let lamp = Arc::new(XZRectangle::new(113.0, 443.0, 127.0, 432.0, 1299.0, light));
         lights.add(lamp);
         lights
@@ -60,7 +60,7 @@ impl HittableList {
         let back = ImageTexture::new(&String::from("pinkblue.png"));
         let pink = Lambertian::newp(back);
         //  let white = Lambertian::new(Color::new(0.73, 0.73, 0.73));
-        let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 20.0);
+        let light = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 25.0);
         let mut boxes1 = HittableList::default();
         let aluminum = Metal::new(Vec3::new(0.8, 0.85, 0.88), 0.);
 
@@ -68,7 +68,7 @@ impl HittableList {
         for i in 0..boxes_per_side {
             for j in 0..boxes_per_side {
                 let w = 100.0;
-                let x0 = -1000.0 + i as f64 * w;
+                let x0 = -800.0 + i as f64 * w;
                 let z0 = -1000.0 + j as f64 * w;
                 let y0 = -20.0;
                 let x1 = x0 + w;
@@ -111,7 +111,7 @@ impl HittableList {
         let move_obj = Arc::new(Translate::new(cloud, Vec3::new(500.0, 600.0, 400.0)));
         objects.add(move_obj);
 
-        objects.add(Arc::new(YZRectangle::new(
+        /*  objects.add(Arc::new(YZRectangle::new(
             0.0,
             1300.0,
             -800.0,
@@ -126,7 +126,7 @@ impl HittableList {
             1355.0,
             -800.0,
             pink.clone(),
-        )));
+        ))); */
         let lamp = Arc::new(XZRectangle::new(113.0, 443.0, 127.0, 432.0, 1299.0, light));
         objects.add(Arc::new(FlipFace::new(lamp)));
 
@@ -139,7 +139,7 @@ impl HittableList {
             pink.clone(),
         )));
         objects.add(Arc::new(XYRectangle::new(
-            -800.0, 1355.0, 0.0, 1300.0, 1355.0, pink,
+            -2000.0, 3000.0, 0.0, 1300.0, 1355.0, pink,
         )));
         let light2 = DiffuseLight::new_col(Color::new(1.0, 1.0, 1.0), 1.0);
         let blue = MixtureMaterial::new(light2, glass.clone(), 0.5);

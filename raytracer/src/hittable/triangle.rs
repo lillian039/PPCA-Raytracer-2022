@@ -54,15 +54,14 @@ impl<M: Material> Triangle<M> {
 
         Self {
             a: (a),
-            b: (b),
-            c: (c),
+            b: (b),            c: (c),
             a1: fa,
             b1: fb,
             c1: fc,
             d1: fd,
             mp: mat,
-            minimum: Point::new(xmin, ymin, zmin),
-            maximum: Point::new(xmax, ymax, zmax),
+            minimum: Point::new(xmin-0.0001, ymin-0.0001, zmin-0.0001),
+            maximum: Point::new(xmax+0.0001, ymax+0.0001, zmax+0.0001),
         }
     }
 }

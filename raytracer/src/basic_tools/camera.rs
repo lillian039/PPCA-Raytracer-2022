@@ -122,7 +122,7 @@ impl Camera {
         )
     }
     pub fn whale() -> Self {
-        let aspect_ratio = 1.0;
+        let aspect_ratio = 16.0 / 9.0;
         let lookfrom = Point::new(278.0, 278.0, -800.0);
         let lookat = Point::new(278.0, 278.0, 0.0);
         let vup = Vec3::new(0.0, 1.0, 0.0);
@@ -132,7 +132,7 @@ impl Camera {
             lookfrom,
             lookat,
             vup,
-            50.0,
+            40.0,
             aspect_ratio,
             aperture,
             dist_to_focus,
